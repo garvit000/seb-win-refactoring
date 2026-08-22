@@ -14,6 +14,10 @@
 #   .\run-dev.ps1 -Fullscreen                 # test fullscreen browser view mode
 #   .\run-dev.ps1 -Config path\to\other.seb    # use a different development config
 #   .\run-dev.ps1 -PrintConfig                # show effective settings, don't launch
+#   .\run-dev.ps1 -App "C:\...\SafeExamBrowser.exe"
+#                                             # load the dev config into an SEB build other
+#                                             # than DevEnvironment\build -- useful to try the
+#                                             # development configuration against an installed SEB.
 #
 # Quit the session with Ctrl-Q, Alt-F4, or the Quit button.
 #
@@ -23,6 +27,7 @@ param(
     [string]$Url,
     [switch]$Fullscreen,
     [string]$Config,
+    [string]$App,
     [switch]$PrintConfig,
     [switch]$Help,
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -38,10 +43,11 @@ Usage:
   .\run-dev.ps1 -Url <url>                   Override start URL
   .\run-dev.ps1 -Fullscreen                  Use fullscreen browser mode
   .\run-dev.ps1 -Config <path>               Use different development config
+  .\run-dev.ps1 -App <path>                  Use specific SEB executable
   .\run-dev.ps1 -PrintConfig                 Show effective settings, don't launch
 
 Options also accept POSIX-style flags:
-  --url <url>, --fullscreen, --config <path>, --print-config, --help
+  --url <url>, --fullscreen, --config <path>, --app <path>, --print-config, --help
 "@
     exit 0
 }
@@ -62,6 +68,11 @@ for ($i = 0; $i -lt $ExtraArgs.Count; $i++) {
                 $Config = $ExtraArgs[++$i]
             }
         }
+        "--app" {
+            if ($i + 1 -lt $ExtraArgs.Count) {
+                $App = $ExtraArgs[++$i]
+            }
+        }
         "--print-config" {
             $PrintConfig = $true
         }
@@ -79,17 +90,32 @@ if (-not (Test-Path $configSrc)) {
     Write-Failure "Configuration file not found: $configSrc"
 }
 
+$launchApp = $DEV_APP
 if (-not $PrintConfig) {
-    if (-not (Test-Path $DEV_APP)) {
-        Write-Failure @"
+    if ($App) {
+        if (-not (Test-Path $App)) {
+            Write-Failure "Specified application executable not found: $App"
+        }
+        $launchApp = (Resolve-Path $App).Path
+        Write-WarningMsg @"
+Using an SEB build outside DevEnvironment: $launchApp
+This exercises the development configuration, not the code in this source tree.
+Source changes require a build -- see .\build-dev.ps1.
+"@
+    } else {
+        if (-not (Test-Path $DEV_APP)) {
+            Write-Failure @"
 No development build found at:
   $DEV_APP
 Build it first:
   .\build-dev.ps1 (or build-dev.cmd)
+Or try the development configuration against an installed SEB:
+  .\run-dev.ps1 -App `"C:\Program Files\SafeExamBrowser\SafeExamBrowser.exe`"
 "@
+        }
+        Assert-DevAppPath $DEV_APP
+        Assert-NoProductionSebRunning
     }
-    Assert-DevAppPath $DEV_APP
-    Assert-NoProductionSebRunning
 }
 
 # Guard rail: this script must never launch a configuration that would permanently
@@ -169,7 +195,7 @@ $logsFolder = Join-Path $localAppData "SafeExamBrowser\Logs"
 
 Write-Host ""
 Write-Host "Safe Exam Browser -- local development session" -ForegroundColor Cyan
-Write-Host "  App     : " -NoNewline; Write-Host $DEV_APP -ForegroundColor White
+Write-Host "  App     : " -NoNewline; Write-Host $launchApp -ForegroundColor White
 Write-Host "  Config  : " -NoNewline; Write-Host $configSrc -ForegroundColor White
 if ($effectiveConfigFile -ne $configSrc) {
     Write-Host "  Session : " -NoNewline; Write-Host $effectiveConfigFile -ForegroundColor White
@@ -183,6 +209,6 @@ Write-Host "  Quit with Ctrl-Q, Alt-F4, or the Quit button."
 Write-Host ""
 
 Write-Info "Launching SafeExamBrowser..."
-Start-Process -FilePath $DEV_APP -ArgumentList "`"$effectiveConfigFile`""
+Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`""
 
 Write-Success "Launched. Attach Visual Studio / debugger via Debug -> Attach to Process -> SafeExamBrowser if needed."

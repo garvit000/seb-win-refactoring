@@ -49,6 +49,62 @@ Every script also supports `-Help` or `--help`.
 
 ---
 
+### Trying the configuration without building
+
+If you don't have Visual Studio Build Tools yet but do have Safe Exam Browser installed, you can exercise the development *configuration* — app switching, windowed browser, no lockdown — against that installed copy:
+
+```powershell
+.\run-dev.ps1 -App "C:\Program Files\SafeExamBrowser\SafeExamBrowser.exe"
+```
+
+This launches the chosen SEB with the dev config the same way double-clicking a `.seb` file would. It is safe for the same reason the normal flow is: the config is session-only (`sebConfigPurpose = 0`, still enforced), so that installation's persistent client settings are not written to, and nothing inside `Program Files` is modified.
+
+---
+
+## Testing the "Open in Safe Exam Browser" link
+
+Assessment sites offer a button that launches SEB directly. It is a link using the `seb://` (or `sebs://`) URL scheme, and clicking it makes **Windows** launch whichever application owns that scheme — normally the installed, production SEB. No script is involved, so `run-dev.ps1` can never be reached that way.
+
+This folder reproduces the same click-to-launch flow for development, using a scheme of its own:
+
+```
+seb://server/exam.seb      →  installed Safe Exam Browser   (unchanged, full lockdown)
+sebdev://server/exam.seb   →  SEBDevHandler  →  run-dev.ps1  →  development SEB
+```
+
+### Setting it up
+
+```powershell
+.\register-url-handler.ps1                               # register the helper for your user
+Start-Process .\seb-test-page.html                       # the stand-in page; click the button
+.\check-last-run.ps1                                     # confirm the chain actually ran
+```
+
+Remove it again with `.\register-url-handler.ps1 -Unregister` (or `.\clean-dev.ps1`, since the handler script is in `build\`).
+
+### Why this cannot disturb a real exam
+
+The handler registers **only** `sebdev://` and `sebdevs://` in `HKCU:\Software\Classes` (user registry) — never `seb://` or `sebs://`. Nothing else on the machine claims those names, so Windows routes them without any system-wide default handler being changed. A genuine `seb://` exam link keeps opening the installed Safe Exam Browser exactly as before.
+
+The trade-off is that the button has to be clicked on `seb-test-page.html`, not on the customer's live site, because their HTML says `seb://`. `seb-test-page.html` takes a URL and rewrites it the same way an assessment site does (`https://` → `sebdevs://`).
+
+### Checking that the dev flow really ran
+
+SEB opening is not proof, since the production SEB opening normally looks much the same. `.\check-last-run.ps1` walks the whole chain and reports each step:
+
+```text
+  ok  protocol handler  registered in HKCU:\Software\Classes (claims: sebdev, sebdevs)
+  ok  handler ran       received: sebdevs://server/exam.seb
+  ok  run-dev.ps1       run-dev.ps1 launched successfully
+  ok  SEB running       development build (DevEnvironment\build)
+  ok  config            development configuration was applied
+  ok  dev mode          unlocked session (kiosk restrictions relaxed, app switching allowed)
+```
+
+Raw handler output is in `build\url-handler.log`; no new line means the click never reached the helper.
+
+---
+
 ## What's in this folder
 
 | File | Purpose |
@@ -56,6 +112,11 @@ Every script also supports `-Help` or `--help`.
 | `SEBDevelopment.seb` | The development configuration — an unencrypted XML plist `.seb` file with relaxed restrictions. |
 | `check-prereqs.ps1` | Diagnoses installed SDKs, .NET targeting packs, Visual Studio / MSBuild, and VC++ redistributables. |
 | `check-prereqs.cmd` | CMD wrapper for `check-prereqs.ps1`. |
+| `register-url-handler.ps1` | Registers `sebdev://` and `sebdevs://` in user registry to enable click-to-launch testing. |
+| `register-url-handler.cmd` | CMD wrapper for `register-url-handler.ps1`. |
+| `seb-test-page.html` | Local stand-in for the customer's "Open in Safe Exam Browser" page. |
+| `check-last-run.ps1` | Reports whether a click actually reached the dev flow. Read-only. |
+| `check-last-run.cmd` | CMD wrapper for `check-last-run.ps1`. |
 | `build-dev.ps1` | Compiles `SafeExamBrowser.sln` (Debug configuration) into `DevEnvironment\build\Debug`. |
 | `build-dev.cmd` | CMD wrapper for `build-dev.ps1`. |
 | `run-dev.ps1` | Launches that build with `SEBDevelopment.seb`. |
@@ -63,7 +124,7 @@ Every script also supports `-Help` or `--help`.
 | `clean-dev.ps1` | Removes `DevEnvironment\build`. |
 | `clean-dev.cmd` | CMD wrapper for `clean-dev.ps1`. |
 | `seb-dev-common.ps1` | Shared paths, checks, tool detection, and output helpers. |
-| `build/` | Generated: the Debug build, NuGet cache, and throwaway session configs. Git-ignored. |
+| `build/` | Generated: the Debug build, NuGet cache, handler script, and throwaway session configs. Git-ignored. |
 
 ---
 
@@ -120,7 +181,7 @@ The file itself is documented; read `SEBDevelopment.seb` for the full configurat
 
 This is enforced in three independent ways:
 
-**1. No source code was changed.** This folder adds a configuration file, shell scripts, and documentation. SEB's security logic, its default settings, and its production behavior are byte-for-byte what they were.
+**1. No source code is changed by default.** This folder adds configuration files, shell scripts, and documentation. SEB's security logic, its default settings, and its production behavior are byte-for-byte what they were.
 
 **2. The settings are session-only and never persisted.** `SEBDevelopment.seb` declares:
 
@@ -133,7 +194,7 @@ This is enforced in three independent ways:
 
 Nothing is written to `%APPDATA%\SafeExamBrowser\SebClientSettings.seb` or `%PROGRAMDATA%\SafeExamBrowser\SebClientSettings.seb`. When the dev session quits, the settings are discarded, and the persisted SEB client configuration is untouched. `run-dev.ps1` **refuses to launch** any configuration whose `sebConfigPurpose` is not `0`.
 
-**3. The scripts stay inside this folder.** `build-dev.ps1` builds only the `Debug` configuration into `DevEnvironment\build`. It never builds Release and never installs to `Program Files`. `run-dev.ps1` and `clean-dev.ps1` refuse to operate on any executable outside `DevEnvironment\build`, and `run-dev.ps1` aborts if a SEB installed in `Program Files` is currently running.
+**3. The scripts stay inside this folder.** `build-dev.ps1` builds only the `Debug` configuration into `DevEnvironment\build`. It never builds Release and never installs to `Program Files`. By default `run-dev.ps1` launches only the build in `DevEnvironment\build`; `-App` is the one deliberate, explicit exception, and even then it only launches the chosen executable with a config file — it never modifies that installation, and reason 2 above still applies to it.
 
 ---
 
