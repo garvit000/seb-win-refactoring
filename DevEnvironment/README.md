@@ -36,6 +36,7 @@ Quit the session with **Ctrl-Q**, **Alt-F4**, or the **Quit** button on the SEB 
 Common variations:
 
 ```powershell
+.\check-prereqs.ps1                         # checks if required SDKs and VS/MSBuild are present
 .\run-dev.ps1 -Url http://localhost:3000     # point the browser at a local test server
 .\run-dev.ps1 -Fullscreen                   # test the fullscreen browser view mode
 .\run-dev.ps1 -PrintConfig                  # show the effective settings, don't launch
@@ -53,6 +54,8 @@ Every script also supports `-Help` or `--help`.
 | File | Purpose |
 | --- | --- |
 | `SEBDevelopment.seb` | The development configuration — an unencrypted XML plist `.seb` file with relaxed restrictions. |
+| `check-prereqs.ps1` | Diagnoses installed SDKs, .NET targeting packs, Visual Studio / MSBuild, and VC++ redistributables. |
+| `check-prereqs.cmd` | CMD wrapper for `check-prereqs.ps1`. |
 | `build-dev.ps1` | Compiles `SafeExamBrowser.sln` (Debug configuration) into `DevEnvironment\build\Debug`. |
 | `build-dev.cmd` | CMD wrapper for `build-dev.ps1`. |
 | `run-dev.ps1` | Launches that build with `SEBDevelopment.seb`. |
