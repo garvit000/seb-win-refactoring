@@ -1,6 +1,7 @@
 #
 # run-dev.ps1 -- launch the Debug build of Safe Exam Browser with the local
-#              development configuration (DevEnvironment\SEBDevelopment.seb).
+#              development configuration (DevEnvironment\SEBDevelopment.seb)
+#              or a custom exam .seb file in a relaxed developer session.
 #
 # The configuration is handed to SEB as a normal .seb file, exactly the way a
 # double-clicked config would be. Because it declares sebConfigPurpose = 0
@@ -12,7 +13,7 @@
 #   .\run-dev.ps1                             # launch with default dev config
 #   .\run-dev.ps1 -Url http://localhost:3000   # override only the start URL
 #   .\run-dev.ps1 -Fullscreen                 # test fullscreen browser view mode
-#   .\run-dev.ps1 -Config path\to\other.seb    # use a different development config
+#   .\run-dev.ps1 -Config path\to\exam.seb    # use a specific exam .seb configuration
 #   .\run-dev.ps1 -PrintConfig                # show effective settings, don't launch
 #   .\run-dev.ps1 -App "C:\...\SafeExamBrowser.exe"
 #                                             # load the dev config into an SEB build other
@@ -42,7 +43,7 @@ Usage:
   .\run-dev.ps1                              Launch with default dev config
   .\run-dev.ps1 -Url <url>                   Override start URL
   .\run-dev.ps1 -Fullscreen                  Use fullscreen browser mode
-  .\run-dev.ps1 -Config <path>               Use different development config
+  .\run-dev.ps1 -Config <path>               Use different development config (.seb file)
   .\run-dev.ps1 -App <path>                  Use specific SEB executable
   .\run-dev.ps1 -PrintConfig                 Show effective settings, don't launch
 
@@ -118,74 +119,80 @@ Or try the development configuration against an installed SEB:
     }
 }
 
-# Guard rail: this script must never launch a configuration that would permanently
-# reconfigure the SEB client. sebConfigPurpose must be 0 (sebConfigPurposeStartingExam / ConfigurationMode.Exam).
-[xml]$configXml = Get-SebConfigXml $configSrc
-$configPurpose = Get-SebConfigValue -ConfigXml $configXml -KeyName "sebConfigPurpose"
+# Check if config is plain XML or encrypted binary
+$isXmlConfig = $false
+try {
+    $firstBytes = [System.IO.File]::ReadAllBytes($configSrc)
+    if ($firstBytes.Length -ge 4) {
+        $firstStr = [System.Text.Encoding]::UTF8.GetString($firstBytes[0..[Math]::Min(10, $firstBytes.Length - 1)])
+        if ($firstStr.Contains("<?xm") -or $firstStr.Contains("<plist")) {
+            $isXmlConfig = $true
+        }
+    }
+} catch {}
 
-if ($configPurpose -ne "0") {
-    Write-Failure @"
+$effectiveConfigFile = $configSrc
+
+if ($isXmlConfig) {
+    # Guard rail: this script must never launch a configuration that would permanently
+    # reconfigure the SEB client. sebConfigPurpose must be 0 (sebConfigPurposeStartingExam / ConfigurationMode.Exam).
+    [xml]$configXml = Get-SebConfigXml $configSrc
+    $configPurpose = Get-SebConfigValue -ConfigXml $configXml -KeyName "sebConfigPurpose"
+
+    if ($configPurpose -and $configPurpose -ne "0") {
+        Write-Failure @"
 '$configSrc' has sebConfigPurpose = '$configPurpose'.
 Only sebConfigPurpose = 0 (starting exam / session-only settings) is allowed here,
 because any other value could write development settings into persistent SEB client
 configuration in %APPDATA% or %PROGRAMDATA%.
 "@
-}
+    }
 
-# Sanity check on kiosk mode: warn if kiosk restrictions would lock down the desktop
-$createNewDesktop = Get-SebConfigValue -ConfigXml $configXml -KeyName "createNewDesktop"
-$killExplorerShell = Get-SebConfigValue -ConfigXml $configXml -KeyName "killExplorerShell"
-$appSwitching = Get-SebConfigValue -ConfigXml $configXml -KeyName "allowSwitchToApplications"
+    # --- Build the effective session configuration -------------------------------
+    $sessionDir = Join-Path $DEV_BUILD_DIR "session"
+    if (-not (Test-Path $sessionDir)) {
+        New-Item -ItemType Directory -Path $sessionDir -Force | Out-Null
+    }
 
-if ($createNewDesktop -eq "true" -or $killExplorerShell -eq "true" -or $appSwitching -eq "false") {
-    Write-WarningMsg @"
-'$configSrc' has kiosk restrictions enabled.
-SEB may switch desktops or prevent app switching.
-For standard development, set createNewDesktop=false, killExplorerShell=false, and allowSwitchToApplications=true.
-"@
-}
+    $sessionConfig = Join-Path $sessionDir "SEBDevelopment-session.seb"
+    [xml]$sessionXml = Get-SebConfigXml $configSrc
 
-# --- Build the effective session configuration -------------------------------
+    $hasOverrides = $false
 
-$sessionDir = Join-Path $DEV_BUILD_DIR "session"
-if (-not (Test-Path $sessionDir)) {
-    New-Item -ItemType Directory -Path $sessionDir -Force | Out-Null
-}
+    if ($Url) {
+        Set-SebConfigValue -ConfigXml $sessionXml -KeyName "startURL" -TypeName "string" -Value $Url
+        Write-Info "Start URL override: $Url"
+        $hasOverrides = $true
+    }
 
-$sessionConfig = Join-Path $sessionDir "SEBDevelopment-session.seb"
-[xml]$sessionXml = Get-SebConfigXml $configSrc
+    if ($Fullscreen) {
+        Set-SebConfigValue -ConfigXml $sessionXml -KeyName "browserViewMode" -TypeName "integer" -Value "1"
+        Write-Info "Browser view mode: fullscreen"
+        $hasOverrides = $true
+    }
 
-$hasOverrides = $false
-
-if ($Url) {
-    Set-SebConfigValue -ConfigXml $sessionXml -KeyName "startURL" -TypeName "string" -Value $Url
-    Write-Info "Start URL override: $Url"
-    $hasOverrides = $true
-}
-
-if ($Fullscreen) {
-    Set-SebConfigValue -ConfigXml $sessionXml -KeyName "browserViewMode" -TypeName "integer" -Value "1"
-    Write-Info "Browser view mode: fullscreen"
-    $hasOverrides = $true
-}
-
-$effectiveConfigFile = if ($hasOverrides) {
-    # Save the modified session config without BOM
-    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-    $xmlSettings = New-Object System.Xml.XmlWriterSettings
-    $xmlSettings.Indent = $true
-    $xmlSettings.Encoding = $utf8NoBom
-    $writer = [System.Xml.XmlWriter]::Create($sessionConfig, $xmlSettings)
-    $sessionXml.Save($writer)
-    $writer.Close()
-    $sessionConfig
+    if ($hasOverrides) {
+        # Save the modified session config without BOM
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        $xmlSettings = New-Object System.Xml.XmlWriterSettings
+        $xmlSettings.Indent = $true
+        $xmlSettings.Encoding = $utf8NoBom
+        $writer = [System.Xml.XmlWriter]::Create($sessionConfig, $xmlSettings)
+        $sessionXml.Save($writer)
+        $writer.Close()
+        $effectiveConfigFile = $sessionConfig
+    }
 } else {
-    $configSrc
+    Write-Info "Using binary/encrypted .seb configuration: $configSrc"
 }
 
 if ($PrintConfig) {
-    Write-Info "Effective development settings ($effectiveConfigFile):"
-    Get-Content $effectiveConfigFile
+    if ($isXmlConfig) {
+        Write-Info "Effective development settings ($effectiveConfigFile):"
+        Get-Content $effectiveConfigFile
+    } else {
+        Write-Info "Configuration is an encrypted binary .seb file ($configSrc)."
+    }
     exit 0
 }
 
@@ -209,7 +216,11 @@ Write-Host "  Settings are session-only and are not written to persistent client
 Write-Host "  Quit with Ctrl-Q, Alt-F4, or the Quit button."
 Write-Host ""
 
-Write-Info "Launching SafeExamBrowser..."
-Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`""
+# Enable relaxed lockdown environment flag for Debug builds so any .seb file runs windowed and unlocked
+$env:SEB_DEV_RELAXED_LOCKDOWN = "1"
+[Environment]::SetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN", "1", [EnvironmentVariableTarget]::Process)
+
+Write-Info "Launching SafeExamBrowser (with relaxed development lockdown)..."
+Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`"" -Environment @{ "SEB_DEV_RELAXED_LOCKDOWN" = "1" }
 
 Write-Success "Launched. Attach Visual Studio / debugger via Debug -> Attach to Process -> SafeExamBrowser if needed."

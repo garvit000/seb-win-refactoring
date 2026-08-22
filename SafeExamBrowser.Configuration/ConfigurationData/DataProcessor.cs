@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,9 @@ using System.IO;
 using System.Security.Cryptography;
 using SafeExamBrowser.Settings;
 using SafeExamBrowser.Settings.Applications;
+using SafeExamBrowser.Settings.Browser;
 using SafeExamBrowser.Settings.Security;
+using SafeExamBrowser.Settings.UserInterface;
 
 namespace SafeExamBrowser.Configuration.ConfigurationData
 {
@@ -31,6 +33,9 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 			InitializeClipboardSettings(settings);
 			InitializeProctoringSettings(settings);
 			RemoveLegacyBrowsers(settings);
+#if DEBUG
+			ApplyDevRelaxations(settings);
+#endif
 		}
 
 		private void AllowBrowserToolbarForReloading(AppSettings settings)
@@ -104,5 +109,24 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 				settings.Applications.Whitelist.Remove(legacyBrowser);
 			}
 		}
+
+#if DEBUG
+		private void ApplyDevRelaxations(AppSettings settings)
+		{
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			{
+				settings.Security.KioskMode = KioskMode.None;
+				settings.Security.AllowTermination = true;
+				settings.Browser.MainWindow.FullScreenMode = false;
+				settings.Browser.MainWindow.AllowDeveloperConsole = true;
+				settings.Browser.AdditionalWindow.AllowDeveloperConsole = true;
+				settings.Keyboard.AllowAltTab = true;
+				settings.Keyboard.AllowAltF4 = true;
+				settings.Keyboard.AllowCtrlEsc = true;
+				settings.Keyboard.AllowAltEsc = true;
+				settings.Service.IgnoreService = true;
+			}
+		}
+#endif
 	}
 }
