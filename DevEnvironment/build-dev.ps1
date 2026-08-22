@@ -72,81 +72,81 @@ Please install Visual Studio 2019/2022 (Community, Professional, or Enterprise) 
 
 Write-Info "Using MSBuild: $msbuild"
 
-# 4. Restore NuGet packages
+# 4. Restore NuGet packages (both packages.config and PackageReference)
 $nuget = Ensure-NuGet
 if ($nuget -and (Test-Path $nuget)) {
-    Write-Info "Restoring NuGet packages for SafeExamBrowser.sln..."
+    Write-Info "Restoring NuGet packages..."
     $nugetArgs = @("restore", $SLN_PATH)
     if ($Quiet) { $nugetArgs += "-Verbosity"; $nugetArgs += "quiet" }
     & $nuget @nugetArgs
-    if ($LASTEXITCODE -ne 0) {
-        Write-WarningMsg "NuGet restore reported exit code $LASTEXITCODE; proceeding with build..."
-    }
-} else {
-    Write-Info "Attempting MSBuild package restore..."
-    & $msbuild $SLN_PATH /t:Restore /p:Configuration=$Configuration /p:Platform=$Platform /verbosity:minimal
 }
 
-# 5. Build
+# Restore PackageReference dependencies
+Write-Info "Restoring MSBuild package references..."
+$restoreVerbosity = if ($Quiet) { "quiet" } else { "minimal" }
+& $msbuild $SLN_PATH /t:Restore /p:Configuration=$Configuration /p:Platform=$Platform /p:RestoreIgnoreFailedProjects=true /verbosity:$restoreVerbosity
+
+# 5. Build Projects
 if (-not (Test-Path $DEV_APP_DIR)) {
     New-Item -ItemType Directory -Path $DEV_APP_DIR -Force | Out-Null
 }
 
-Write-Info "Building solution '$SLN_PATH' ($Platform $Configuration) into $DEV_APP_DIR"
+$solutionDirArg = $REPO_ROOT
+if (-not $solutionDirArg.EndsWith("\")) { $solutionDirArg += "\" }
 
-$msBuildArguments = @(
-    $SLN_PATH,
+$runtimeProj = Join-Path $REPO_ROOT "SafeExamBrowser.Runtime\SafeExamBrowser.Runtime.csproj"
+$clientProj = Join-Path $REPO_ROOT "SafeExamBrowser.Client\SafeExamBrowser.Client.csproj"
+
+Write-Info "Building SafeExamBrowser ($Platform $Configuration)..."
+
+$verbosityFlag = if ($Quiet) { "/verbosity:quiet" } else { "/verbosity:minimal" }
+
+# Build Client first (compiles browser & client components)
+$clientArgs = @(
+    $clientProj,
     "/p:Configuration=$Configuration",
     "/p:Platform=$Platform",
-    "/p:OutDir=$DEV_APP_DIR\",
-    "/property:langversion=latest"
+    "/p:SolutionDir=$solutionDirArg",
+    "/property:langversion=latest",
+    $verbosityFlag
 )
-
-if ($Quiet) {
-    $msBuildArguments += "/verbosity:quiet"
-} else {
-    $msBuildArguments += "/verbosity:minimal"
-}
-
 if ($ExtraArgs -and $ExtraArgs.Count -gt 0) {
-    $filteredArgs = $ExtraArgs | Where-Object { $_ -ne "--clean" -and $_ -ne "--quiet" -and $_ -ne "--" }
-    if ($filteredArgs.Count -gt 0) {
-        $msBuildArguments += $filteredArgs
-    }
+    $filtered = $ExtraArgs | Where-Object { $_ -ne "--clean" -and $_ -ne "--quiet" -and $_ -ne "--" }
+    if ($filtered.Count -gt 0) { $clientArgs += $filtered }
+}
+& $msbuild @clientArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Failure "Client build failed with exit code $LASTEXITCODE"
 }
 
-& $msbuild @msBuildArguments
-$buildStatus = $LASTEXITCODE
-
-if ($buildStatus -ne 0) {
-    Write-Host ""
-    Write-WarningMsg "The build failed (MSBuild exit code $buildStatus)."
-    Write-Host @"
-Common causes on a fresh checkout:
-  * .NET Framework 4.8 Developer Pack / SDK is missing.
-    Download from: https://dotnet.microsoft.com/download/dotnet-framework/net48
-  * Missing Visual C++ 2015-2022 Redistributable (needed for CEF/Chromium components).
-  * Missing NuGet packages: try running 'nuget restore SafeExamBrowser.sln'.
-"@ -ForegroundColor DarkGray
-    exit $buildStatus
+# Build Runtime (compiles runtime controller & main application executable)
+$runtimeArgs = @(
+    $runtimeProj,
+    "/p:Configuration=$Configuration",
+    "/p:Platform=$Platform",
+    "/p:SolutionDir=$solutionDirArg",
+    "/property:langversion=latest",
+    $verbosityFlag
+)
+if ($ExtraArgs -and $ExtraArgs.Count -gt 0) {
+    $filtered = $ExtraArgs | Where-Object { $_ -ne "--clean" -and $_ -ne "--quiet" -and $_ -ne "--" }
+    if ($filtered.Count -gt 0) { $runtimeArgs += $filtered }
+}
+& $msbuild @runtimeArgs
+if ($LASTEXITCODE -ne 0) {
+    Write-Failure "Runtime build failed with exit code $LASTEXITCODE"
 }
 
-# 6. Verify built application
+# 6. Copy output binaries into DevEnvironment\build\Debug
+$runtimeBin = Join-Path $REPO_ROOT "SafeExamBrowser.Runtime\bin\$Platform\$Configuration"
+if (Test-Path $runtimeBin) {
+    Write-Info "Staging application binaries into $DEV_APP_DIR..."
+    Copy-Item -Path "$runtimeBin\*" -Destination $DEV_APP_DIR -Recurse -Force
+}
+
+# 7. Verify built application
 if (-not (Test-Path $DEV_APP)) {
-    $runtimeBin = Join-Path $REPO_ROOT "SafeExamBrowser.Runtime\bin\$Platform\$Configuration"
-    $clientBin = Join-Path $REPO_ROOT "SafeExamBrowser.Client\bin\$Platform\$Configuration"
-
-    if ((Test-Path $runtimeBin) -and (Test-Path (Join-Path $runtimeBin "SafeExamBrowser.exe"))) {
-        Write-Info "Copying project build outputs to $DEV_APP_DIR..."
-        Copy-Item -Path "$runtimeBin\*" -Destination $DEV_APP_DIR -Recurse -Force
-        if (Test-Path $clientBin) {
-            Copy-Item -Path "$clientBin\*" -Destination $DEV_APP_DIR -Recurse -Force
-        }
-    }
-}
-
-if (-not (Test-Path $DEV_APP)) {
-    Write-Failure "Build reported success but $DEV_APP does not exist."
+    Write-Failure "Build completed but $DEV_APP does not exist."
 }
 
 Write-Success "Built $DEV_APP"

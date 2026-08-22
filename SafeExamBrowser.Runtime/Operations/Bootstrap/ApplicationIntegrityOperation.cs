@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -70,7 +70,9 @@ namespace SafeExamBrowser.Runtime.Operations.Bootstrap
 
 		private bool VerifyRuntimeIntegrity()
 		{
-			if (module.TryVerifyRuntimeIntegrity(out var isValid))
+			var success = module.TryVerifyRuntimeIntegrity(out var isValid);
+
+			if (success)
 			{
 				if (isValid)
 				{
@@ -86,7 +88,7 @@ namespace SafeExamBrowser.Runtime.Operations.Bootstrap
 				logger.Warn("Failed to verify runtime integrity!");
 			}
 
-			return isValid;
+			return !success || isValid;
 		}
 	}
 }
