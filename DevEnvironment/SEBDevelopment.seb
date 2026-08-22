@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    SEBDevelopment.seb — LOCAL DEVELOPMENT / TESTING CONFIGURATION ONLY
+
+    ============================ DO NOT USE FOR EXAMS ============================
+    This configuration deliberately relaxes the kiosk restrictions so that SEB can
+    be developed, debugged and UI-tested next to normal Windows applications. It is
+    NOT suitable for any assessment or production use.
+    ==============================================================================
+
+    Why this file cannot affect the production configuration:
+
+      sebConfigPurpose = 0  (sebConfigPurposeStartingExam / ConfigurationMode.Exam)
+
+    With that value SEB operates in exam mode where configuration settings live
+    only in-memory for the duration of the session and are never written to the
+    client configuration in %APPDATA%\SafeExamBrowser or %PROGRAMDATA%\SafeExamBrowser.
+    Normal and examination launches of SEB remain completely untouched. Quitting
+    the development session discards all session settings entirely.
+
+    The file is an unencrypted XML plist. SEB accepts that form directly, so no
+    password, certificate, or Config Key / Browser Exam Key is required.
+
+    Launch it with DevEnvironment\run-dev.ps1 or run-dev.cmd — see DevEnvironment\README.md.
+-->
+<plist version="1.0">
+<dict>
+
+    <!-- ===== Session isolation ============================================ -->
+    <!-- 0 = starting exam: settings live in-memory only and are never
+         persisted to the SEB client configuration files on disk. -->
+    <key>sebConfigPurpose</key>
+    <integer>0</integer>
+
+    <!-- ===== Lockdown & Kiosk Mode ========================================= -->
+    <!-- On Windows, setting both createNewDesktop and killExplorerShell to false
+         places SEB in KioskMode.None so it runs on the regular Windows desktop
+         without switching desktops or terminating the Windows Explorer shell. -->
+    <key>createNewDesktop</key>
+    <false/>
+    <key>killExplorerShell</key>
+    <false/>
+    <key>lockdownModePolicy</key>
+    <integer>1</integer>
+
+    <!-- Allow switching to and from other applications (Alt-Tab, taskbar, clicking
+         other windows). Process switching is left enabled and windows remain at normal levels. -->
+    <key>allowSwitchToApplications</key>
+    <true/>
+
+    <!-- Do not treat process or app switching as policy violations. -->
+    <key>enableAppSwitcherCheck</key>
+    <false/>
+
+    <!-- Never terminate applications the developer is already running (Visual Studio,
+         VS Code, terminals, debuggers, browsers, ...) when the SEB session starts. -->
+    <key>autoQuitApplications</key>
+    <false/>
+
+    <!-- Do not treat a stopped/suspended process as a violation while debugging. -->
+    <key>detectStoppedProcess</key>
+    <false/>
+
+    <!-- No process allow/deny lists in development: SEB neither requires nor kills
+         any other application. -->
+    <key>permittedProcesses</key>
+    <array/>
+    <key>prohibitedProcesses</key>
+    <array/>
+
+    <!-- ===== Service Bypass ================================================ -->
+    <!-- sebServiceIgnore allows running SEB without the elevated SafeExamBrowser
+         Windows Service installed or running on the development system. -->
+    <key>sebServiceIgnore</key>
+    <true/>
+    <key>sebServicePolicy</key>
+    <integer>0</integer>
+    <key>allowScreenSharing</key>
+    <true/>
+    <key>insideSebEnableStartTaskManager</key>
+    <true/>
+    <key>insideSebEnableSwitchUser</key>
+    <true/>
+    <key>insideSebEnableLockThisComputer</key>
+    <true/>
+    <key>insideSebEnableChangeAPassword</key>
+    <true/>
+    <key>insideSebEnableLogOff</key>
+    <true/>
+    <key>insideSebEnableShutDown</key>
+    <true/>
+    <key>insideSebEnableEaseOfAccess</key>
+    <true/>
+    <key>insideSebEnableNetworkConnectionSelector</key>
+    <true/>
+    <key>insideSebEnableVmWareClientShade</key>
+    <true/>
+    <key>enableChromeNotifications</key>
+    <true/>
+
+    <!-- ===== Keyboard & Mouse ============================================== -->
+    <!-- Enable standard Windows shortcut keys for development convenience. -->
+    <key>enableAltTab</key>
+    <true/>
+    <key>enableAltEsc</key>
+    <true/>
+    <key>enableCtrlEsc</key>
+    <true/>
+    <key>enableStartMenu</key>
+    <true/>
+    <key>enableAltF4</key>
+    <true/>
+    <key>enableEsc</key>
+    <true/>
+    <key>enableF1</key>
+    <true/>
+    <key>enableF2</key>
+    <true/>
+    <key>enableF3</key>
+    <true/>
+    <key>enableF4</key>
+    <true/>
+    <key>enableF5</key>
+    <true/>
+    <key>enableF6</key>
+    <true/>
+    <key>enableF7</key>
+    <true/>
+    <key>enableF8</key>
+    <true/>
+    <key>enableF9</key>
+    <true/>
+    <key>enableF10</key>
+    <true/>
+    <key>enableF11</key>
+    <true/>
+    <key>enableF12</key>
+    <true/>
+    <key>enablePrintScreen</key>
+    <true/>
+    <key>enableInjected</key>
+    <true/>
+    <key>enableRightMouse</key>
+    <true/>
+    <key>enableMiddleMouse</key>
+    <true/>
+
+    <!-- ===== Getting out of the session ==================================== -->
+    <key>allowQuit</key>
+    <true/>
+    <key>hashedQuitPassword</key>
+    <string></string>
+    <key>hashedAdminPassword</key>
+    <string></string>
+    <!-- Preferences window reachable so settings UI can be exercised. NOTE:
+         saving as "configuring a client" would write persistent settings. -->
+    <key>allowPreferencesWindow</key>
+    <true/>
+    <!-- Allow loading another .seb config while a dev session is running. -->
+    <key>examSessionReconfigureAllow</key>
+    <true/>
+
+    <!-- ===== Display & Virtual Machines ==================================== -->
+    <!-- Developers frequently test inside VMs and multi-monitor setups. -->
+    <key>allowVirtualMachine</key>
+    <true/>
+    <key>allowedDisplaysMaxNumber</key>
+    <integer>3</integer>
+    <key>allowedDisplayBuiltinEnforce</key>
+    <false/>
+    <key>allowedDisplaysIgnoreFailure</key>
+    <true/>
+    <key>displayAlwaysOn</key>
+    <false/>
+    <key>systemAlwaysOn</key>
+    <false/>
+    <key>enableCursorVerification</key>
+    <false/>
+    <key>enableSessionVerification</key>
+    <false/>
+
+    <!-- ===== Browser window: windowed, resizable, inspectable ============== -->
+    <!-- 0 = browserViewModeWindow (not fullscreen), so the window can be moved
+         and resized next to IDEs and tools. -->
+    <key>browserViewMode</key>
+    <integer>0</integer>
+    <key>mainBrowserWindowWidth</key>
+    <string>1280</string>
+    <key>mainBrowserWindowHeight</key>
+    <string>860</string>
+    <!-- 1 = browserWindowPositioningCenter -->
+    <key>mainBrowserWindowPositioning</key>
+    <integer>1</integer>
+    <key>enableBrowserWindowToolbar</key>
+    <true/>
+    <key>hideBrowserWindowToolbar</key>
+    <false/>
+    <key>showReloadButton</key>
+    <true/>
+    <key>browserWindowAllowReload</key>
+    <true/>
+    <key>allowBrowsingBackForward</key>
+    <true/>
+    <!-- 3 = browserWindowShowURLAlways: the loaded URL is visible while debugging. -->
+    <key>browserWindowShowURL</key>
+    <integer>3</integer>
+    <key>browserWindowAllowAddressBar</key>
+    <true/>
+    <!-- Web Inspector / developer console (Chromium DevTools). -->
+    <key>allowDeveloperConsole</key>
+    <true/>
+    <key>allowFind</key>
+    <true/>
+    <key>allowSpellCheck</key>
+    <true/>
+    <key>enableZoomPage</key>
+    <true/>
+    <key>enableZoomText</key>
+    <true/>
+
+    <!-- ===== SEB Taskbar & Action Center =================================== -->
+    <key>showTaskBar</key>
+    <true/>
+    <key>showTime</key>
+    <true/>
+    <key>showInputLanguage</key>
+    <true/>
+    <key>showSideMenu</key>
+    <true/>
+    <key>showApplicationLogButton</key>
+    <true/>
+    <key>allowApplicationLog</key>
+    <true/>
+
+    <!-- ===== Files & Downloads ============================================= -->
+    <key>allowDownloads</key>
+    <true/>
+    <key>allowDownUploads</key>
+    <true/>
+    <key>allowUploads</key>
+    <true/>
+    <key>allowCustomDownUploadLocation</key>
+    <true/>
+    <key>useTemporaryDownUploadDirectory</key>
+    <false/>
+    <key>downloadAndOpenSebConfig</key>
+    <true/>
+
+    <!-- ===== Network ======================================================= -->
+    <!-- No URL filtering while developing, so arbitrary local test servers load. -->
+    <key>URLFilterEnable</key>
+    <false/>
+    <key>URLFilterEnableContentFilter</key>
+    <false/>
+    <!-- No Browser Exam Key header: dev builds are not registered with an LMS. -->
+    <key>sendBrowserExamKey</key>
+    <false/>
+    <!-- 0 = sebModeStartURL (plain start URL, no SEB Server session). -->
+    <key>sebMode</key>
+    <integer>0</integer>
+    <key>startURL</key>
+    <string>https://safeexambrowser.org/start</string>
+
+    <!-- ===== Proctoring: disabled in local development ===================== -->
+    <key>enableScreenProctoring</key>
+    <false/>
+    <key>jitsiMeetEnable</key>
+    <false/>
+    <key>zoomEnable</key>
+    <false/>
+    <key>remoteProctoringViewShow</key>
+    <false/>
+    <key>showProctoringDisclaimer</key>
+    <false/>
+
+    <!-- ===== Logging ======================================================= -->
+    <!-- 1 = Debug level logging. Logs are saved to %LOCALAPPDATA%\SafeExamBrowser\Logs -->
+    <key>logLevel</key>
+    <integer>1</integer>
+
+</dict>
+</plist>
