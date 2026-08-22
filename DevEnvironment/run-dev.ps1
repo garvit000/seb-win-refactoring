@@ -221,6 +221,6 @@ $env:SEB_DEV_RELAXED_LOCKDOWN = "1"
 [Environment]::SetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN", "1", [EnvironmentVariableTarget]::Process)
 
 Write-Info "Launching SafeExamBrowser (with relaxed development lockdown)..."
-Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`"" -Environment @{ "SEB_DEV_RELAXED_LOCKDOWN" = "1" }
+Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`""
 
 Write-Success "Launched. Attach Visual Studio / debugger via Debug -> Attach to Process -> SafeExamBrowser if needed."
