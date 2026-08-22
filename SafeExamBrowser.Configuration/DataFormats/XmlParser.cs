@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -292,7 +292,17 @@ namespace SafeExamBrowser.Configuration.DataFormats
 			else
 			{
 				data.Seek(0, SeekOrigin.Begin);
-				data.Read(prefixData, 0, XML_PREFIX.Length);
+				var header = new byte[3];
+				var bytesRead = data.Read(header, 0, 3);
+				if (bytesRead == 3 && header[0] == 0xEF && header[1] == 0xBB && header[2] == 0xBF)
+				{
+					data.Read(prefixData, 0, XML_PREFIX.Length);
+				}
+				else
+				{
+					data.Seek(0, SeekOrigin.Begin);
+					data.Read(prefixData, 0, XML_PREFIX.Length);
+				}
 			}
 
 			return Encoding.UTF8.GetString(prefixData);

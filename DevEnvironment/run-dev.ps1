@@ -170,10 +170,11 @@ if ($Fullscreen) {
 }
 
 $effectiveConfigFile = if ($hasOverrides) {
-    # Save the modified session config
+    # Save the modified session config without BOM
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $xmlSettings = New-Object System.Xml.XmlWriterSettings
     $xmlSettings.Indent = $true
-    $xmlSettings.Encoding = [System.Text.Encoding]::UTF8
+    $xmlSettings.Encoding = $utf8NoBom
     $writer = [System.Xml.XmlWriter]::Create($sessionConfig, $xmlSettings)
     $sessionXml.Save($writer)
     $writer.Close()
