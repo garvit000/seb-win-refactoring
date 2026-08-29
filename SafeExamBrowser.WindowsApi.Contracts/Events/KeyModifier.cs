@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,6 +19,7 @@ namespace SafeExamBrowser.WindowsApi.Contracts.Events
 		None = 0,
 		Alt = 0b1,
 		Ctrl = 0b10,
-		Injected = 0b100
+		Injected = 0b100,
+		Shift = 0b1000
 	}
 }

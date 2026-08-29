@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,6 +24,13 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 		private readonly INativeMethods nativeMethods;
 		private readonly KeyboardSettings settings;
 
+		/// <summary>
+		/// Controls whether window and app switching (Alt+Tab, Win key, trackpad gestures) is dynamically unlocked.
+		/// Defaults to false (Strict Proctored Exam Lockdown).
+		/// Toggleable via Shift + Alt + S (unlock) and Shift + Alt + L (relock).
+		/// </summary>
+		public static bool SwitchingUnlocked { get; set; } = false;
+
 		public KeyboardInterceptor(ILogger logger, INativeMethods nativeMethods, KeyboardSettings settings)
 		{
 			this.logger = logger;
@@ -46,10 +53,58 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 
 		private bool KeyboardHookCallback(int keyCode, KeyModifier modifier, KeyState state)
 		{
-			var block = false;
 			var key = KeyInterop.KeyFromVirtualKey(keyCode);
 
-			block |= key == Key.Apps;
+			// Developer Hotkeys: Shift + Alt + S (Unlock Switching) and Shift + Alt + L (Lock Switching)
+			var isShiftAlt = modifier.HasFlag(KeyModifier.Alt) && modifier.HasFlag(KeyModifier.Shift);
+			if (isShiftAlt)
+			{
+				if (key == Key.S)
+				{
+					if (state == KeyState.Pressed && !SwitchingUnlocked)
+					{
+						SwitchingUnlocked = true;
+						logger.Info("==> [HOTKEY] Shift+Alt+S: Window, Tab, and App switching UNLOCKED.");
+					}
+					return true;
+				}
+
+				if (key == Key.L)
+				{
+					if (state == KeyState.Pressed && SwitchingUnlocked)
+					{
+						SwitchingUnlocked = false;
+						logger.Info("==> [HOTKEY] Shift+Alt+L: Window, Tab, and App switching LOCKED (Proctored Mode).");
+					}
+					return true;
+				}
+			}
+
+			var block = false;
+
+			// Proctored Lockdown mode vs Unlocked Switching mode
+			if (!SwitchingUnlocked)
+			{
+				// In Proctored Mode, strictly block all window/task switching keys and gestures
+				block |= key == Key.Apps;
+				block |= key == Key.LWin;
+				block |= key == Key.RWin;
+				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Tab;
+				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Escape;
+				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Space;
+				block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.Escape;
+			}
+			else
+			{
+				// In Unlocked Mode, allow Alt+Tab, Win key, and switching shortcuts
+				block |= key == Key.Apps;
+				block |= key == Key.LWin && !settings.AllowSystemKey;
+				block |= key == Key.RWin && !settings.AllowSystemKey;
+				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Escape && !settings.AllowAltEsc;
+				block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.Escape && !settings.AllowCtrlEsc;
+			}
+
+			// General restrictions
 			block |= key == Key.Escape && modifier == KeyModifier.None && !settings.AllowEsc;
 			block |= key == Key.F1 && !settings.AllowF1;
 			block |= key == Key.F2 && !settings.AllowF2;
@@ -63,17 +118,11 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 			block |= key == Key.F10 && !settings.AllowF10;
 			block |= key == Key.F11 && !settings.AllowF11;
 			block |= key == Key.F12 && !settings.AllowF12;
-			block |= key == Key.LWin && !settings.AllowSystemKey;
 			block |= key == Key.PrintScreen && !settings.AllowPrintScreen;
-			block |= key == Key.RWin && !settings.AllowSystemKey;
 
-			block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Escape && !settings.AllowAltEsc;
 			block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.F4 && !settings.AllowAltF4;
-			block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Space;
-			block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Tab;
 
 			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.C && !settings.AllowCtrlC;
-			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.Escape && !settings.AllowCtrlEsc;
 			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.V && !settings.AllowCtrlV;
 			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.X && !settings.AllowCtrlX;
 

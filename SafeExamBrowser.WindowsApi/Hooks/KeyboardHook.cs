@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,7 +17,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 {
 	internal class KeyboardHook
 	{
-		private bool altPressed, ctrlPressed;
+		private bool altPressed, ctrlPressed, shiftPressed;
 		private KeyboardHookCallback callback;
 		private IntPtr handle;
 		private HookDelegate hookDelegate;
@@ -84,16 +84,21 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 		{
 			var modifier = KeyModifier.None;
 
-			TrackCtrlAndAlt(keyData, wParam);
+			TrackModifiers(keyData, wParam);
 
-			if (altPressed || keyData.Flags.HasFlag(KBDLLHOOKSTRUCTFlags.LLKHF_ALTDOWN))
+			if (altPressed || keyData.Flags.HasFlag(KBDLLHOOKSTRUCTFlags.LLKHF_ALTDOWN) || (User32.GetAsyncKeyState((int) VirtualKeyCode.LeftAlt) & 0x8000) != 0 || (User32.GetAsyncKeyState((int) VirtualKeyCode.RightAlt) & 0x8000) != 0)
 			{
 				modifier |= KeyModifier.Alt;
 			}
 
-			if (ctrlPressed)
+			if (ctrlPressed || (User32.GetAsyncKeyState((int) VirtualKeyCode.LeftControl) & 0x8000) != 0 || (User32.GetAsyncKeyState((int) VirtualKeyCode.RightControl) & 0x8000) != 0)
 			{
 				modifier |= KeyModifier.Ctrl;
+			}
+
+			if (shiftPressed || (User32.GetAsyncKeyState((int) VirtualKeyCode.LeftShift) & 0x8000) != 0 || (User32.GetAsyncKeyState((int) VirtualKeyCode.RightShift) & 0x8000) != 0 || (User32.GetAsyncKeyState((int) VirtualKeyCode.Shift) & 0x8000) != 0)
+			{
+				modifier |= KeyModifier.Shift;
 			}
 
 			if(keyData.Flags.HasFlag(KBDLLHOOKSTRUCTFlags.LLKHF_INJECTED) || keyData.Flags.HasFlag(KBDLLHOOKSTRUCTFlags.LLKHF_LOWER_IL_INJECTED))
@@ -104,7 +109,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 			return modifier;
 		}
 
-		private void TrackCtrlAndAlt(KBDLLHOOKSTRUCT keyData, int wParam)
+		private void TrackModifiers(KBDLLHOOKSTRUCT keyData, int wParam)
 		{
 			var keyCode = keyData.KeyCode;
 
@@ -116,12 +121,17 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 			{
 				altPressed = IsPressed(wParam);
 			}
+			else if (keyCode == (uint) VirtualKeyCode.LeftShift || keyCode == (uint) VirtualKeyCode.RightShift || keyCode == (uint) VirtualKeyCode.Shift)
+			{
+				shiftPressed = IsPressed(wParam);
+			}
 
 			if (ctrlPressed && altPressed && keyCode == (uint) VirtualKeyCode.Delete)
 			{
 				// When the Secure Attention Sequence is pressed, the WM_KEYUP / WM_SYSKEYUP messages for CTRL and ALT get lost...
 				ctrlPressed = false;
 				altPressed = false;
+				shiftPressed = false;
 			}
 		}
 

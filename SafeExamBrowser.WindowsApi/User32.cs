@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -49,6 +49,9 @@ namespace SafeExamBrowser.WindowsApi
 
 		[DllImport("user32.dll", SetLastError = true)]
 		internal static extern bool GetCursorPos(ref POINT pt);
+
+		[DllImport("user32.dll")]
+		internal static extern short GetAsyncKeyState(int vKey);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		internal static extern IntPtr GetThreadDesktop(int dwThreadId);
