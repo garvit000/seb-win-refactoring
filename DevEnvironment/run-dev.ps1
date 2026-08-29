@@ -53,7 +53,7 @@ Options also accept POSIX-style flags:
     exit 0
 }
 
-# Support POSIX-style CLI flags (--url, --fullscreen, etc.)
+# Support POSIX-style CLI flags (--url, --fullscreen, etc.) and positional arguments
 for ($i = 0; $i -lt $ExtraArgs.Count; $i++) {
     switch ($ExtraArgs[$i]) {
         "--url" {
@@ -77,6 +77,15 @@ for ($i = 0; $i -lt $ExtraArgs.Count; $i++) {
         "--print-config" {
             $PrintConfig = $true
         }
+    }
+}
+
+if (-not $Config -and -not $Url -and $ExtraArgs -and $ExtraArgs.Count -gt 0) {
+    $firstArg = $ExtraArgs[0].Trim('"', ' ')
+    if ($firstArg.EndsWith(".seb", [System.StringComparison]::OrdinalIgnoreCase) -or (Test-Path $firstArg)) {
+        $Config = $firstArg
+    } elseif ($firstArg -match "^(https?|sebs?|sebdevs?)://") {
+        $Url = $firstArg
     }
 }
 
@@ -134,20 +143,6 @@ try {
 $effectiveConfigFile = $configSrc
 
 if ($isXmlConfig) {
-    # Guard rail: this script must never launch a configuration that would permanently
-    # reconfigure the SEB client. sebConfigPurpose must be 0 (sebConfigPurposeStartingExam / ConfigurationMode.Exam).
-    [xml]$configXml = Get-SebConfigXml $configSrc
-    $configPurpose = Get-SebConfigValue -ConfigXml $configXml -KeyName "sebConfigPurpose"
-
-    if ($configPurpose -and $configPurpose -ne "0") {
-        Write-Failure @"
-'$configSrc' has sebConfigPurpose = '$configPurpose'.
-Only sebConfigPurpose = 0 (starting exam / session-only settings) is allowed here,
-because any other value could write development settings into persistent SEB client
-configuration in %APPDATA% or %PROGRAMDATA%.
-"@
-    }
-
     # --- Build the effective session configuration -------------------------------
     $sessionDir = Join-Path $DEV_BUILD_DIR "session"
     if (-not (Test-Path $sessionDir)) {
@@ -158,6 +153,13 @@ configuration in %APPDATA% or %PROGRAMDATA%.
     [xml]$sessionXml = Get-SebConfigXml $configSrc
 
     $hasOverrides = $false
+
+    $configPurpose = Get-SebConfigValue -ConfigXml $sessionXml -KeyName "sebConfigPurpose"
+    if ($configPurpose -and $configPurpose -ne "0") {
+        Write-WarningMsg "Configuration '$configSrc' has sebConfigPurpose = '$configPurpose'. Forcing sebConfigPurpose = 0 for session-only mode."
+        Set-SebConfigValue -ConfigXml $sessionXml -KeyName "sebConfigPurpose" -TypeName "integer" -Value "0"
+        $hasOverrides = $true
+    }
 
     if ($Url) {
         Set-SebConfigValue -ConfigXml $sessionXml -KeyName "startURL" -TypeName "string" -Value $Url

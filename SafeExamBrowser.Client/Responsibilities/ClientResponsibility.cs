@@ -43,7 +43,7 @@ namespace SafeExamBrowser.Client.Responsibilities
 		protected bool IsValidQuitPassword(string password)
 		{
 #if DEBUG
-			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 			{
 				Context.QuitPasswordValidated = true;
 				return true;

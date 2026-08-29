@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -410,9 +410,30 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 
 			if (commandLineArgs?.Length > 1)
 			{
-				isValidUri = Uri.TryCreate(commandLineArgs[1], UriKind.Absolute, out uri);
-				source = UriSource.CommandLine;
-				Logger.Info($"Found command-line argument for configuration resource: '{uri}', the URI is {(isValidUri ? "valid" : "invalid")}.");
+				for (var i = 1; i < commandLineArgs.Length; i++)
+				{
+					var arg = commandLineArgs[i]?.Trim('"', ' ');
+					if (string.IsNullOrWhiteSpace(arg) || arg.StartsWith("-") || arg.StartsWith("/"))
+					{
+						continue;
+					}
+
+					if (File.Exists(arg))
+					{
+						var fullPath = Path.GetFullPath(arg);
+						isValidUri = Uri.TryCreate(fullPath, UriKind.Absolute, out uri);
+						source = UriSource.CommandLine;
+						Logger.Info($"Found command-line file argument for configuration resource: '{uri}'.");
+						break;
+					}
+					else if (Uri.TryCreate(arg, UriKind.Absolute, out uri))
+					{
+						isValidUri = true;
+						source = UriSource.CommandLine;
+						Logger.Info($"Found command-line URI argument for configuration resource: '{uri}'.");
+						break;
+					}
+				}
 			}
 
 			if (!isValidUri && File.Exists(ProgramDataFilePath))

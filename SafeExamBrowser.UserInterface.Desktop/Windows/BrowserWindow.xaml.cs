@@ -245,7 +245,7 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 			{
 				e.Cancel = true;
 #if DEBUG
-				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 				{
 					QuitRequested?.Invoke();
 				}
@@ -354,7 +354,7 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 			if (isMainWindow)
 			{
 #if DEBUG
-				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 				{
 					this.EnableCloseButton();
 				}

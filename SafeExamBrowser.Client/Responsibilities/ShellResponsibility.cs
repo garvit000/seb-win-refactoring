@@ -133,7 +133,7 @@ namespace SafeExamBrowser.Client.Responsibilities
 		private bool TryInitiateShutdown()
 		{
 #if DEBUG
-			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 			{
 				var initiateDevShutdown = TryValidateQuitPassword();
 				return initiateDevShutdown && TryRequestShutdown();

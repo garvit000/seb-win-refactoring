@@ -113,10 +113,12 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 #if DEBUG
 		private void ApplyDevRelaxations(AppSettings settings)
 		{
-			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 			{
 				settings.Security.KioskMode = KioskMode.None;
 				settings.Security.AllowTermination = true;
+				settings.Security.AllowReconfiguration = true;
+				settings.Browser.AllowConfigurationDownloads = true;
 				settings.Browser.MainWindow.FullScreenMode = true;
 				settings.Browser.MainWindow.ShowToolbar = true;
 				settings.Browser.MainWindow.AllowAddressBar = false;

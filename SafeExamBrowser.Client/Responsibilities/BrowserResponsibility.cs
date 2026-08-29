@@ -125,6 +125,12 @@ namespace SafeExamBrowser.Client.Responsibilities
 
 		private bool IsAllowedToReconfigure(string url)
 		{
+#if DEBUG
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
+			{
+				return true;
+			}
+#endif
 			var allow = false;
 			var hasQuitPassword = !string.IsNullOrWhiteSpace(Settings.Security.QuitPasswordHash);
 			var hasUrl = !string.IsNullOrWhiteSpace(Settings.Security.ReconfigurationUrl);
@@ -207,7 +213,7 @@ namespace SafeExamBrowser.Client.Responsibilities
 		{
 			Logger.Info("Attempting to shutdown as requested by the browser...");
 #if DEBUG
-			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
 			{
 				if (TryValidateQuitPassword())
 				{
