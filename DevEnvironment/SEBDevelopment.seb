@@ -180,10 +180,9 @@
     <key>enableSessionVerification</key>
     <false/>
 
-    <!-- 0 = browserViewModeWindow (not fullscreen), with 100% width and height
-         so it opens maximized with titlebar, minimize, and close options. -->
+    <!-- 1 = browserViewModeFullscreen (fullscreen mode without window frame) -->
     <key>browserViewMode</key>
-    <integer>0</integer>
+    <integer>1</integer>
     <key>mainBrowserWindowWidth</key>
     <string>100%</string>
     <key>mainBrowserWindowHeight</key>
@@ -200,12 +199,12 @@
     <key>browserWindowAllowReload</key>
     <true/>
     <key>allowBrowsingBackForward</key>
-    <true/>
-    <!-- 3 = browserWindowShowURLAlways: the loaded URL is visible while debugging. -->
+    <false/>
+    <!-- 0 = browserWindowShowURLNever: URL bar is not displayed during active test -->
     <key>browserWindowShowURL</key>
-    <integer>3</integer>
+    <integer>0</integer>
     <key>browserWindowAllowAddressBar</key>
-    <true/>
+    <false/>
     <!-- Web Inspector / developer console (Chromium DevTools). -->
     <key>allowDeveloperConsole</key>
     <true/>
