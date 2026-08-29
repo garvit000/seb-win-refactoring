@@ -7,7 +7,9 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using SafeExamBrowser.Logging.Contracts;
 using SafeExamBrowser.Monitoring.Contracts.Keyboard;
@@ -27,7 +29,7 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 		/// <summary>
 		/// Controls whether window and app switching (Alt+Tab, Win key, trackpad gestures) is dynamically unlocked.
 		/// Defaults to false (Strict Proctored Exam Lockdown).
-		/// Toggleable via Shift + Alt + S (unlock) and Shift + Alt + L (relock).
+		/// Toggleable via Shift + Alt + S / Ctrl + Alt + S (unlock) and Shift + Alt + L (relock).
 		/// </summary>
 		public static bool SwitchingUnlocked { get; set; } = false;
 
@@ -55,29 +57,35 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 		{
 			var key = KeyInterop.KeyFromVirtualKey(keyCode);
 
-			// Developer Hotkeys: Shift + Alt + S (Unlock Switching) and Shift + Alt + L (Lock Switching)
+			// Developer Hotkeys:
+			// Unlock: Shift + Alt + S OR Ctrl + Alt + S
+			// Lock:   Shift + Alt + L OR Ctrl + Alt + S (when already unlocked)
 			var isShiftAlt = modifier.HasFlag(KeyModifier.Alt) && modifier.HasFlag(KeyModifier.Shift);
-			if (isShiftAlt)
-			{
-				if (key == Key.S)
-				{
-					if (state == KeyState.Pressed && !SwitchingUnlocked)
-					{
-						SwitchingUnlocked = true;
-						logger.Info("==> [HOTKEY] Shift+Alt+S: Window, Tab, and App switching UNLOCKED.");
-					}
-					return true;
-				}
+			var isCtrlAlt  = modifier.HasFlag(KeyModifier.Alt) && modifier.HasFlag(KeyModifier.Ctrl);
 
-				if (key == Key.L)
+			if ((isShiftAlt || isCtrlAlt) && key == Key.S)
+			{
+				if (state == KeyState.Pressed)
 				{
-					if (state == KeyState.Pressed && SwitchingUnlocked)
+					if (!SwitchingUnlocked)
 					{
-						SwitchingUnlocked = false;
-						logger.Info("==> [HOTKEY] Shift+Alt+L: Window, Tab, and App switching LOCKED (Proctored Mode).");
+						UnlockSwitching();
 					}
-					return true;
+					else if (isCtrlAlt)
+					{
+						LockSwitching();
+					}
 				}
+				return true;
+			}
+
+			if (isShiftAlt && key == Key.L)
+			{
+				if (state == KeyState.Pressed && SwitchingUnlocked)
+				{
+					LockSwitching();
+				}
+				return true;
 			}
 
 			var block = false;
@@ -134,6 +142,40 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 			}
 
 			return block;
+		}
+
+		private void UnlockSwitching()
+		{
+			SwitchingUnlocked = true;
+			logger.Info("==> [HOTKEY] Window, Tab, and App switching UNLOCKED.");
+
+			// Launch or restore secondary browser window (Microsoft Edge) on demand
+			Task.Run(() =>
+			{
+				try
+				{
+					var edgeProcesses = Process.GetProcessesByName("msedge");
+					if (edgeProcesses.Length == 0)
+					{
+						Process.Start(new ProcessStartInfo
+						{
+							FileName = "msedge.exe",
+							Arguments = "--new-window https://www.bing.com",
+							UseShellExecute = true
+						});
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.Warn($"Could not launch msedge.exe: {ex.Message}");
+				}
+			});
+		}
+
+		private void LockSwitching()
+		{
+			SwitchingUnlocked = false;
+			logger.Info("==> [HOTKEY] Window, Tab, and App switching LOCKED (Proctored Mode).");
 		}
 
 		private void Log(Key key, int keyCode, KeyModifier modifier, KeyState state)

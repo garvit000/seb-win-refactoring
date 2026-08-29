@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,6 +22,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 		private HookDelegate hookDelegate;
 
 		internal Guid Id { get; private set; }
+		internal int ThreadId { get; private set; }
 
 		internal MouseHook(MouseHookCallback callback)
 		{
@@ -31,6 +32,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 
 		internal void Attach()
 		{
+			ThreadId = Kernel32.GetCurrentThreadId();
 			var process = System.Diagnostics.Process.GetCurrentProcess();
 			var module = process.MainModule;
 			var moduleHandle = Kernel32.GetModuleHandle(module.ModuleName);

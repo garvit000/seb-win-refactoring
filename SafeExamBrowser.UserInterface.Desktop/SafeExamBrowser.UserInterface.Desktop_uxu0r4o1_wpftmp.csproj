@@ -1,0 +1,337 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A502DF54-7169-4647-94BD-18B192924866}</ProjectGuid>
+    <OutputType>library</OutputType>
+    <RootNamespace>SafeExamBrowser.UserInterface.Desktop</RootNamespace>
+    <AssemblyName>SafeExamBrowser.UserInterface.Desktop</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ControlFactory.cs" />
+    <Compile Include="Controls\ActionCenter\RaiseHandControl.xaml.cs">
+      <DependentUpon>RaiseHandControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\RaiseHandControl.xaml.cs">
+      <DependentUpon>RaiseHandControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowFactory.cs" />
+    <Compile Include="Windows\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ActionCenter.xaml.cs">
+      <DependentUpon>ActionCenter.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\BrowserWindow.xaml.cs">
+      <DependentUpon>BrowserWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\ApplicationControl.xaml.cs">
+      <DependentUpon>ApplicationControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\ApplicationButton.xaml.cs">
+      <DependentUpon>ApplicationButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\AudioControl.xaml.cs">
+      <DependentUpon>AudioControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\Clock.xaml.cs">
+      <DependentUpon>Clock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\KeyboardLayoutButton.xaml.cs">
+      <DependentUpon>KeyboardLayoutButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\KeyboardLayoutControl.xaml.cs">
+      <DependentUpon>KeyboardLayoutControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\NotificationButton.xaml.cs">
+      <DependentUpon>NotificationButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\PowerSupplyControl.xaml.cs">
+      <DependentUpon>PowerSupplyControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\QuitButton.xaml.cs">
+      <DependentUpon>QuitButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\NetworkButton.xaml.cs">
+      <DependentUpon>NetworkButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ActionCenter\NetworkControl.xaml.cs">
+      <DependentUpon>NetworkControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Browser\DownloadItemControl.xaml.cs">
+      <DependentUpon>DownloadItemControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\ApplicationControl.xaml.cs">
+      <DependentUpon>ApplicationControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\ApplicationWindowButton.xaml.cs">
+      <DependentUpon>ApplicationWindowButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\AudioControl.xaml.cs">
+      <DependentUpon>AudioControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\Clock.xaml.cs">
+      <DependentUpon>Clock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\KeyboardLayoutButton.xaml.cs">
+      <DependentUpon>KeyboardLayoutButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\KeyboardLayoutControl.xaml.cs">
+      <DependentUpon>KeyboardLayoutControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\NotificationButton.xaml.cs">
+      <DependentUpon>NotificationButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\PowerSupplyControl.xaml.cs">
+      <DependentUpon>PowerSupplyControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\QuitButton.xaml.cs">
+      <DependentUpon>QuitButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\NetworkButton.xaml.cs">
+      <DependentUpon>NetworkButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskbar\NetworkControl.xaml.cs">
+      <DependentUpon>NetworkControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Taskview\WindowControl.xaml.cs">
+      <DependentUpon>WindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ErrorDialog.xaml.cs">
+      <DependentUpon>ErrorDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ExamSelectionDialog.xaml.cs">
+      <DependentUpon>ExamSelectionDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\FileSystemDialog.xaml.cs">
+      <DependentUpon>FileSystemDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FileSystemDialogFactory.cs" />
+    <Compile Include="Windows\LockScreen.xaml.cs">
+      <DependentUpon>LockScreen.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\LogWindow.xaml.cs">
+      <DependentUpon>LogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MessageBoxFactory.cs" />
+    <Compile Include="Windows\CredentialsDialog.xaml.cs">
+      <DependentUpon>CredentialsDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PasswordDialog.xaml.cs">
+      <DependentUpon>PasswordDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ProctoringFinalizationDialog.xaml.cs">
+      <DependentUpon>ProctoringFinalizationDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ProctoringWindow.xaml.cs">
+      <DependentUpon>ProctoringWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\RuntimeWindow.xaml.cs">
+      <DependentUpon>RuntimeWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\ServerFailureDialog.xaml.cs">
+      <DependentUpon>ServerFailureDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\SplashScreen.xaml.cs">
+      <DependentUpon>SplashScreen.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\Taskview.xaml.cs">
+      <DependentUpon>Taskview.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserInterfaceFactory.cs" />
+    <Compile Include="ViewModels\DateTimeViewModel.cs" />
+    <Compile Include="ViewModels\LogViewModel.cs" />
+    <Compile Include="ViewModels\ProgressIndicatorViewModel.cs" />
+    <Compile Include="ViewModels\RuntimeWindowViewModel.cs" />
+    <Compile Include="Windows\VerificatorOverlay.xaml.cs">
+      <DependentUpon>VerificatorOverlay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\Taskbar.xaml.cs">
+      <DependentUpon>Taskbar.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SafeExamBrowser.Applications.Contracts\SafeExamBrowser.Applications.Contracts.csproj">
+      <Project>{ac77745d-3b41-43e2-8e84-d40e5a4ee77f}</Project>
+      <Name>SafeExamBrowser.Applications.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Browser.Contracts\SafeExamBrowser.Browser.Contracts.csproj">
+      <Project>{5fb5273d-277c-41dd-8593-a25ce1aff2e9}</Project>
+      <Name>SafeExamBrowser.Browser.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Configuration.Contracts\SafeExamBrowser.Configuration.Contracts.csproj">
+      <Project>{7d74555e-63e1-4c46-bd0a-8580552368c8}</Project>
+      <Name>SafeExamBrowser.Configuration.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Core.Contracts\SafeExamBrowser.Core.Contracts.csproj">
+      <Project>{fe0e1224-b447-4b14-81e7-ed7d84822aa0}</Project>
+      <Name>SafeExamBrowser.Core.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.I18n.Contracts\SafeExamBrowser.I18n.Contracts.csproj">
+      <Project>{1858ddf3-bc2a-4bff-b663-4ce2ffeb8b7d}</Project>
+      <Name>SafeExamBrowser.I18n.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Logging.Contracts\SafeExamBrowser.Logging.Contracts.csproj">
+      <Project>{64ea30fb-11d4-436a-9c2b-88566285363e}</Project>
+      <Name>SafeExamBrowser.Logging.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Proctoring.Contracts\SafeExamBrowser.Proctoring.Contracts.csproj">
+      <Project>{8e52bd1c-0540-4f16-b181-6665d43f7a7b}</Project>
+      <Name>SafeExamBrowser.Proctoring.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Server.Contracts\SafeExamBrowser.Server.Contracts.csproj">
+      <Project>{DB701E6F-BDDC-4CEC-B662-335A9DC11809}</Project>
+      <Name>SafeExamBrowser.Server.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.Settings\SafeExamBrowser.Settings.csproj">
+      <Project>{30b2d907-5861-4f39-abad-c4abf1b3470e}</Project>
+      <Name>SafeExamBrowser.Settings</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.SystemComponents.Contracts\SafeExamBrowser.SystemComponents.Contracts.csproj">
+      <Project>{903129c6-e236-493b-9ad6-c6a57f647a3a}</Project>
+      <Name>SafeExamBrowser.SystemComponents.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.UserInterface.Contracts\SafeExamBrowser.UserInterface.Contracts.csproj">
+      <Project>{c7889e97-6ff6-4a58-b7cb-521ed276b316}</Project>
+      <Name>SafeExamBrowser.UserInterface.Contracts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SafeExamBrowser.UserInterface.Shared\SafeExamBrowser.UserInterface.Shared.csproj">
+      <Project>{38525928-87ba-4f8c-8010-4eb97bfaae13}</Project>
+      <Name>SafeExamBrowser.UserInterface.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\Microsoft.CSharp.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\mscorlib.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\PresentationFramework.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Applications.Contracts\bin\x64\Debug\SafeExamBrowser.Applications.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Browser.Contracts\bin\x64\Debug\SafeExamBrowser.Browser.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Configuration.Contracts\bin\x64\Debug\SafeExamBrowser.Configuration.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Core.Contracts\bin\x64\Debug\SafeExamBrowser.Core.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.I18n.Contracts\bin\x64\Debug\SafeExamBrowser.I18n.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Logging.Contracts\bin\x64\Debug\SafeExamBrowser.Logging.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Proctoring.Contracts\bin\x64\Debug\SafeExamBrowser.Proctoring.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Server.Contracts\bin\x64\Debug\SafeExamBrowser.Server.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.Settings\bin\x64\Debug\SafeExamBrowser.Settings.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.SystemComponents.Contracts\bin\x64\Debug\SafeExamBrowser.SystemComponents.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Contracts\bin\x64\Debug\SafeExamBrowser.UserInterface.Contracts.dll" />
+    <ReferencePath Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Shared\bin\x64\Debug\SafeExamBrowser.UserInterface.Shared.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Drawing.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Windows.Forms.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\WindowsBase.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\WindowsFormsIntegration.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ErrorDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\VerificatorOverlay.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\RaiseHandControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\RaiseHandControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\AboutWindow.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ActionCenter.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\BrowserWindow.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\ApplicationControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\ApplicationButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\AudioControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\Clock.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\KeyboardLayoutButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\KeyboardLayoutControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\NotificationButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\PowerSupplyControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\QuitButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\NetworkButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\ActionCenter\NetworkControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Browser\DownloadItemControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\ApplicationControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\ApplicationWindowButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\AudioControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\Clock.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\KeyboardLayoutButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\KeyboardLayoutControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\NotificationButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\PowerSupplyControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\QuitButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskview\WindowControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ExamSelectionDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\FileSystemDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\LockScreen.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\CredentialsDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ProctoringFinalizationDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ProctoringWindow.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\ServerFailureDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\Taskview.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\NetworkButton.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Controls\Taskbar\NetworkControl.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\LogWindow.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\PasswordDialog.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\RuntimeWindow.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\SplashScreen.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\Windows\Taskbar.g.cs" />
+    <Compile Include="C:\Users\Garvit\Projects\seb\seb-win-refactoring\SafeExamBrowser.UserInterface.Desktop\obj\x64\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
+</Project>

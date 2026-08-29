@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -355,6 +355,11 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 		private bool IsAllowed(IProcess process)
 		{
+			if (process.Name.StartsWith("msedge", StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+
 			foreach (var application in blacklist)
 			{
 				if (BelongsToApplication(process, application))
@@ -374,7 +379,7 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 			if (TryGetProcessFor(window, out var process))
 			{
-				allowed = BelongsToSafeExamBrowser(process) || IsWhitelisted(process, out _);
+				allowed = BelongsToSafeExamBrowser(process) || IsWhitelisted(process, out _) || SafeExamBrowser.Monitoring.Keyboard.KeyboardInterceptor.SwitchingUnlocked || process.Name.StartsWith("msedge", StringComparison.OrdinalIgnoreCase);
 			}
 
 			if (!allowed)

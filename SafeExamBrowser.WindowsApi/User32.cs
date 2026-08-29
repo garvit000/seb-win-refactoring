@@ -53,6 +53,21 @@ namespace SafeExamBrowser.WindowsApi
 		[DllImport("user32.dll")]
 		internal static extern short GetAsyncKeyState(int vKey);
 
+		[DllImport("user32.dll")]
+		internal static extern int GetMessage(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+
+		[DllImport("user32.dll")]
+		internal static extern bool TranslateMessage([In] ref MSG lpMsg);
+
+		[DllImport("user32.dll")]
+		internal static extern IntPtr DispatchMessage([In] ref MSG lpmsg);
+
+		[DllImport("user32.dll")]
+		internal static extern bool PostThreadMessage(int idThread, uint Msg, IntPtr wParam, IntPtr lParam);
+
+		[DllImport("user32.dll")]
+		internal static extern void PostQuitMessage(int nExitCode);
+
 		[DllImport("user32.dll", SetLastError = true)]
 		internal static extern IntPtr GetThreadDesktop(int dwThreadId);
 

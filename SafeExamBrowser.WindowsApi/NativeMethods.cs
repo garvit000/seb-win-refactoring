@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -79,6 +79,11 @@ namespace SafeExamBrowser.WindowsApi
 				}
 
 				KeyboardHooks.TryRemove(hookId, out _);
+
+				if (hook.ThreadId != 0)
+				{
+					User32.PostThreadMessage(hook.ThreadId, 0x0012 /* WM_QUIT */, IntPtr.Zero, IntPtr.Zero);
+				}
 			}
 		}
 
@@ -96,6 +101,11 @@ namespace SafeExamBrowser.WindowsApi
 				}
 
 				MouseHooks.TryRemove(hookId, out _);
+
+				if (hook.ThreadId != 0)
+				{
+					User32.PostThreadMessage(hook.ThreadId, 0x0012 /* WM_QUIT */, IntPtr.Zero, IntPtr.Zero);
+				}
 			}
 		}
 
@@ -354,16 +364,17 @@ namespace SafeExamBrowser.WindowsApi
 			var hookThread = new Thread(() =>
 			{
 				var hook = new KeyboardHook(callback);
-				var sleepEvent = new AutoResetEvent(false);
 
 				hook.Attach();
 				hookId = hook.Id;
 				KeyboardHooks[hookId] = hook;
 				hookReadyEvent.Set();
 
-				while (true)
+				MSG msg;
+				while (User32.GetMessage(out msg, IntPtr.Zero, 0, 0) > 0)
 				{
-					sleepEvent.WaitOne();
+					User32.TranslateMessage(ref msg);
+					User32.DispatchMessage(ref msg);
 				}
 			});
 
@@ -383,16 +394,17 @@ namespace SafeExamBrowser.WindowsApi
 			var hookThread = new Thread(() =>
 			{
 				var hook = new MouseHook(callback);
-				var sleepEvent = new AutoResetEvent(false);
 
 				hook.Attach();
 				hookId = hook.Id;
 				MouseHooks[hookId] = hook;
 				hookReadyEvent.Set();
 
-				while (true)
+				MSG msg;
+				while (User32.GetMessage(out msg, IntPtr.Zero, 0, 0) > 0)
 				{
-					sleepEvent.WaitOne();
+					User32.TranslateMessage(ref msg);
+					User32.DispatchMessage(ref msg);
 				}
 			});
 

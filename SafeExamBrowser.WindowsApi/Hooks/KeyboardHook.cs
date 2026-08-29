@@ -23,6 +23,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 		private HookDelegate hookDelegate;
 
 		internal Guid Id { get; private set; }
+		internal int ThreadId { get; private set; }
 
 		internal KeyboardHook(KeyboardHookCallback callback)
 		{
@@ -32,6 +33,7 @@ namespace SafeExamBrowser.WindowsApi.Hooks
 
 		internal void Attach()
 		{
+			ThreadId = Kernel32.GetCurrentThreadId();
 			var process = System.Diagnostics.Process.GetCurrentProcess();
 			var module = process.MainModule;
 			var moduleHandle = Kernel32.GetModuleHandle(module.ModuleName);

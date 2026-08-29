@@ -552,10 +552,11 @@ if (typeof __SEB_focusElement === 'undefined') {
 			{
 				Top = 0;
 				Left = 0;
-				Height = SystemParameters.WorkArea.Height;
-				Width = SystemParameters.WorkArea.Width;
+				Height = SystemParameters.PrimaryScreenHeight;
+				Width = SystemParameters.PrimaryScreenWidth;
 				ResizeMode = ResizeMode.NoResize;
 				WindowStyle = WindowStyle.None;
+				WindowState = WindowState.Maximized;
 			}
 			else if (WindowSettings.RelativeHeight == 100 && WindowSettings.RelativeWidth == 100)
 			{
