@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -62,6 +62,7 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 		public event FindRequestedEventHandler FindRequested;
 		public event ActionRequestedEventHandler ForwardNavigationRequested;
 		public event ActionRequestedEventHandler HomeNavigationRequested;
+		public event ActionRequestedEventHandler QuitRequested;
 		public event ActionRequestedEventHandler ReloadRequested;
 		public event ActionRequestedEventHandler ZoomInRequested;
 		public event ActionRequestedEventHandler ZoomOutRequested;
@@ -243,6 +244,12 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 			if (isMainWindow)
 			{
 				e.Cancel = true;
+#if DEBUG
+				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+				{
+					QuitRequested?.Invoke();
+				}
+#endif
 			}
 			else
 			{
@@ -346,7 +353,18 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 
 			if (isMainWindow)
 			{
+#if DEBUG
+				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+				{
+					this.EnableCloseButton();
+				}
+				else
+				{
+					this.DisableCloseButton();
+				}
+#else
 				this.DisableCloseButton();
+#endif
 			}
 		}
 

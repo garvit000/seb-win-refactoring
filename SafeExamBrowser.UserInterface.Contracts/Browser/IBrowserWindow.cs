@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -74,6 +74,11 @@ namespace SafeExamBrowser.UserInterface.Contracts.Browser
 		/// Event fired when the user would like to reload the current page.
 		/// </summary>
 		event ActionRequestedEventHandler ReloadRequested;
+
+		/// <summary>
+		/// Event fired when the user requests to quit via the window close button.
+		/// </summary>
+		event ActionRequestedEventHandler QuitRequested;
 
 		/// <summary>
 		/// Event fired when the user would like to zoom in.

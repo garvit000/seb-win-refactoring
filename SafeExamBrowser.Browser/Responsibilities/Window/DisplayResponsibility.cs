@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,6 +26,7 @@ namespace SafeExamBrowser.Browser.Responsibilities.Window
 		internal event WindowClosedEventHandler Closed;
 		internal event IconChangedEventHandler IconChanged;
 		internal event LoseFocusRequestedEventHandler LoseFocusRequested;
+		internal event TerminationRequestedEventHandler TerminationRequested;
 
 		public DisplayResponsibility(BrowserWindowContext context, DisplayHandler displayHandler) : base(context)
 		{
@@ -55,7 +56,14 @@ namespace SafeExamBrowser.Browser.Responsibilities.Window
 			Window.ForwardNavigationRequested += Window_ForwardNavigationRequested;
 			Window.HomeNavigationRequested += HomeNavigationRequested;
 			Window.LoseFocusRequested += Window_LoseFocusRequested;
+			Window.QuitRequested += Window_QuitRequested;
 			Window.ReloadRequested += ReloadRequested;
+		}
+
+		private void Window_QuitRequested()
+		{
+			Logger.Info("User requested window close, forwarding termination request...");
+			TerminationRequested?.Invoke();
 		}
 
 		private void DisplayHandler_FaviconChanged(string uri)

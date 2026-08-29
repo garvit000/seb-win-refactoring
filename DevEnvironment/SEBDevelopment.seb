@@ -180,15 +180,14 @@
     <key>enableSessionVerification</key>
     <false/>
 
-    <!-- ===== Browser window: windowed, resizable, inspectable ============== -->
-    <!-- 0 = browserViewModeWindow (not fullscreen), so the window can be moved
-         and resized next to IDEs and tools. -->
+    <!-- 0 = browserViewModeWindow (not fullscreen), with 100% width and height
+         so it opens maximized with titlebar, minimize, and close options. -->
     <key>browserViewMode</key>
     <integer>0</integer>
     <key>mainBrowserWindowWidth</key>
-    <string>1280</string>
+    <string>100%</string>
     <key>mainBrowserWindowHeight</key>
-    <string>860</string>
+    <string>100%</string>
     <!-- 1 = browserWindowPositioningCenter -->
     <key>mainBrowserWindowPositioning</key>
     <integer>1</integer>

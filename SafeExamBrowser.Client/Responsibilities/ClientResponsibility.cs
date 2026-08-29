@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -42,6 +42,13 @@ namespace SafeExamBrowser.Client.Responsibilities
 
 		protected bool IsValidQuitPassword(string password)
 		{
+#if DEBUG
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			{
+				Context.QuitPasswordValidated = true;
+				return true;
+			}
+#endif
 			var actual = Context.HashAlgorithm.GenerateHashFor(password);
 			var expected = Settings.Security.QuitPasswordHash;
 			var valid = expected.Equals(actual, StringComparison.OrdinalIgnoreCase);
@@ -52,6 +59,26 @@ namespace SafeExamBrowser.Client.Responsibilities
 			}
 
 			return valid;
+		}
+
+		protected bool TryValidateQuitPassword()
+		{
+			var dialog = Context.UserInterfaceFactory.CreatePasswordDialog(TextKey.PasswordDialog_QuitPasswordRequired, TextKey.PasswordDialog_QuitPasswordRequiredTitle);
+			var result = dialog.Show();
+			var success = false;
+
+			if (result.Success && IsValidQuitPassword(result.Password))
+			{
+				success = true;
+				Logger.Info("The user entered the quit password, the application will now terminate.");
+			}
+			else if (result.Success)
+			{
+				Logger.Info("The user entered the wrong quit password.");
+				Context.MessageBox.Show(TextKey.MessageBox_InvalidQuitPassword, TextKey.MessageBox_InvalidQuitPasswordTitle, icon: MessageBoxIcon.Warning);
+			}
+
+			return success;
 		}
 
 		protected void PrepareShutdown()

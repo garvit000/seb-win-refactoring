@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -206,6 +206,16 @@ namespace SafeExamBrowser.Client.Responsibilities
 		private void Browser_TerminationRequested()
 		{
 			Logger.Info("Attempting to shutdown as requested by the browser...");
+#if DEBUG
+			if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") == "1")
+			{
+				if (TryValidateQuitPassword())
+				{
+					TryRequestShutdown();
+				}
+				return;
+			}
+#endif
 			TryRequestShutdown();
 		}
 	}

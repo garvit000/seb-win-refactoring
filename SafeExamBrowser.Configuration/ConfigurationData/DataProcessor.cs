@@ -118,6 +118,16 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 				settings.Security.KioskMode = KioskMode.None;
 				settings.Security.AllowTermination = true;
 				settings.Browser.MainWindow.FullScreenMode = false;
+				settings.Browser.MainWindow.RelativeWidth = 100;
+				settings.Browser.MainWindow.RelativeHeight = 100;
+				settings.Browser.MainWindow.Position = WindowPosition.Center;
+				settings.Browser.MainWindow.ShowToolbar = true;
+				settings.Browser.MainWindow.AllowAddressBar = true;
+				settings.Browser.MainWindow.UrlPolicy = UrlPolicy.Always;
+				settings.Browser.MainWindow.AllowReloading = true;
+				settings.Browser.MainWindow.ShowReloadButton = true;
+				settings.Browser.MainWindow.AllowBackwardNavigation = true;
+				settings.Browser.MainWindow.AllowForwardNavigation = true;
 				settings.Browser.MainWindow.AllowDeveloperConsole = true;
 				settings.Browser.AdditionalWindow.AllowDeveloperConsole = true;
 				settings.Keyboard.AllowAltTab = true;

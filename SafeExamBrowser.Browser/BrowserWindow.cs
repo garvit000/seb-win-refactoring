@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -219,6 +219,7 @@ namespace SafeExamBrowser.Browser
 			displayResponsibility.Closed += (i) => Closed?.Invoke(i);
 			displayResponsibility.IconChanged += (i) => IconChanged?.Invoke(i);
 			displayResponsibility.LoseFocusRequested += (f) => LoseFocusRequested?.Invoke(f);
+			displayResponsibility.TerminationRequested += () => TerminationRequested?.Invoke();
 			downloadResponsibility.ConfigurationDownloadRequested += (f, a) => ConfigurationDownloadRequested?.Invoke(f, a);
 			keyboardResponsibility.LoseFocusRequested += (f) => LoseFocusRequested?.Invoke(f);
 			lifeSpanResponsibility.PopupRequested += (a) => PopupRequested?.Invoke(a);
