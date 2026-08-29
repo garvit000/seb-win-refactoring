@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using SafeExamBrowser.Logging.Contracts;
 using SafeExamBrowser.Monitoring.Contracts.Keyboard;
+using SafeExamBrowser.Settings;
 using SafeExamBrowser.Settings.Monitoring;
 using SafeExamBrowser.WindowsApi.Contracts;
 using SafeExamBrowser.WindowsApi.Contracts.Events;
@@ -26,12 +27,7 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 		private readonly INativeMethods nativeMethods;
 		private readonly KeyboardSettings settings;
 
-		/// <summary>
-		/// Controls whether window and app switching (Alt+Tab, Win key, trackpad gestures) is dynamically unlocked.
-		/// Defaults to false (Strict Proctored Exam Lockdown).
-		/// Toggleable via Shift + Alt + S / Ctrl + Alt + S (unlock) and Shift + Alt + L (relock).
-		/// </summary>
-		public static bool SwitchingUnlocked { get; set; } = false;
+		public static bool SwitchingUnlocked => LockdownState.SwitchingUnlocked;
 
 		public KeyboardInterceptor(ILogger logger, INativeMethods nativeMethods, KeyboardSettings settings)
 		{
@@ -60,18 +56,22 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 			// Developer Hotkeys:
 			// Unlock: Shift + Alt + S OR Ctrl + Alt + S
 			// Lock:   Shift + Alt + L OR Ctrl + Alt + S (when already unlocked)
-			var isShiftAlt = modifier.HasFlag(KeyModifier.Alt) && modifier.HasFlag(KeyModifier.Shift);
-			var isCtrlAlt  = modifier.HasFlag(KeyModifier.Alt) && modifier.HasFlag(KeyModifier.Ctrl);
+			var hasAlt = modifier.HasFlag(KeyModifier.Alt);
+			var hasShift = modifier.HasFlag(KeyModifier.Shift);
+			var hasCtrl = modifier.HasFlag(KeyModifier.Ctrl);
 
-			if ((isShiftAlt || isCtrlAlt) && key == Key.S)
+			var isS = key == Key.S || keyCode == 83;
+			var isL = key == Key.L || keyCode == 76;
+
+			if (hasAlt && (hasShift || hasCtrl) && isS)
 			{
 				if (state == KeyState.Pressed)
 				{
-					if (!SwitchingUnlocked)
+					if (!LockdownState.SwitchingUnlocked)
 					{
 						UnlockSwitching();
 					}
-					else if (isCtrlAlt)
+					else if (hasCtrl)
 					{
 						LockSwitching();
 					}
@@ -79,9 +79,9 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 				return true;
 			}
 
-			if (isShiftAlt && key == Key.L)
+			if (hasAlt && (hasShift || hasCtrl) && isL)
 			{
-				if (state == KeyState.Pressed && SwitchingUnlocked)
+				if (state == KeyState.Pressed && LockdownState.SwitchingUnlocked)
 				{
 					LockSwitching();
 				}
@@ -91,16 +91,16 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 			var block = false;
 
 			// Proctored Lockdown mode vs Unlocked Switching mode
-			if (!SwitchingUnlocked)
+			if (!LockdownState.SwitchingUnlocked)
 			{
 				// In Proctored Mode, strictly block all window/task switching keys and gestures
 				block |= key == Key.Apps;
 				block |= key == Key.LWin;
 				block |= key == Key.RWin;
-				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Tab;
-				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Escape;
-				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Space;
-				block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.Escape;
+				block |= hasAlt && key == Key.Tab;
+				block |= hasAlt && key == Key.Escape;
+				block |= hasAlt && key == Key.Space;
+				block |= hasCtrl && key == Key.Escape;
 			}
 			else
 			{
@@ -108,8 +108,8 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 				block |= key == Key.Apps;
 				block |= key == Key.LWin && !settings.AllowSystemKey;
 				block |= key == Key.RWin && !settings.AllowSystemKey;
-				block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.Escape && !settings.AllowAltEsc;
-				block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.Escape && !settings.AllowCtrlEsc;
+				block |= hasAlt && key == Key.Escape && !settings.AllowAltEsc;
+				block |= hasCtrl && key == Key.Escape && !settings.AllowCtrlEsc;
 			}
 
 			// General restrictions
@@ -128,11 +128,11 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 			block |= key == Key.F12 && !settings.AllowF12;
 			block |= key == Key.PrintScreen && !settings.AllowPrintScreen;
 
-			block |= modifier.HasFlag(KeyModifier.Alt) && key == Key.F4 && !settings.AllowAltF4;
+			block |= hasAlt && key == Key.F4 && !settings.AllowAltF4;
 
-			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.C && !settings.AllowCtrlC;
-			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.V && !settings.AllowCtrlV;
-			block |= modifier.HasFlag(KeyModifier.Ctrl) && key == Key.X && !settings.AllowCtrlX;
+			block |= hasCtrl && key == Key.C && !settings.AllowCtrlC;
+			block |= hasCtrl && key == Key.V && !settings.AllowCtrlV;
+			block |= hasCtrl && key == Key.X && !settings.AllowCtrlX;
 
 			block |= modifier.HasFlag(KeyModifier.Injected) && !settings.AllowInjected;
 
@@ -146,8 +146,8 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 
 		private void UnlockSwitching()
 		{
-			SwitchingUnlocked = true;
 			logger.Info("==> [HOTKEY] Window, Tab, and App switching UNLOCKED.");
+			LockdownState.NotifyUnlocked();
 
 			// Launch or restore secondary browser window (Microsoft Edge) on demand
 			Task.Run(() =>
@@ -174,8 +174,8 @@ namespace SafeExamBrowser.Monitoring.Keyboard
 
 		private void LockSwitching()
 		{
-			SwitchingUnlocked = false;
 			logger.Info("==> [HOTKEY] Window, Tab, and App switching LOCKED (Proctored Mode).");
+			LockdownState.NotifyLocked();
 		}
 
 		private void Log(Key key, int keyCode, KeyModifier modifier, KeyState state)

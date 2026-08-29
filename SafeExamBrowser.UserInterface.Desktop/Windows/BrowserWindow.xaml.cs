@@ -91,6 +91,26 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 
 			InitializeComponent();
 			InitializeBrowserWindow(browserControl);
+
+			if (isMainWindow)
+			{
+				SafeExamBrowser.Settings.LockdownState.Unlocked += () =>
+				{
+					Dispatcher.InvokeAsync(() =>
+					{
+						Topmost = false;
+					});
+				};
+
+				SafeExamBrowser.Settings.LockdownState.Locked += () =>
+				{
+					Dispatcher.InvokeAsync(() =>
+					{
+						Topmost = true;
+						BringToForeground();
+					});
+				};
+			}
 		}
 
 		public void BringToForeground()
@@ -102,7 +122,9 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 					WindowState = WindowState.Normal;
 				}
 
+				Topmost = !SafeExamBrowser.Settings.LockdownState.SwitchingUnlocked;
 				Activate();
+				Focus();
 			});
 		}
 
@@ -353,18 +375,10 @@ namespace SafeExamBrowser.UserInterface.Desktop.Windows
 
 			if (isMainWindow)
 			{
-#if DEBUG
-				if (Environment.GetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN") != "0")
-				{
-					this.EnableCloseButton();
-				}
-				else
-				{
-					this.DisableCloseButton();
-				}
-#else
+				Topmost = !SafeExamBrowser.Settings.LockdownState.SwitchingUnlocked;
+				Activate();
+				Focus();
 				this.DisableCloseButton();
-#endif
 			}
 		}
 
@@ -556,7 +570,8 @@ if (typeof __SEB_focusElement === 'undefined') {
 				Width = SystemParameters.PrimaryScreenWidth;
 				ResizeMode = ResizeMode.NoResize;
 				WindowStyle = WindowStyle.None;
-				WindowState = WindowState.Maximized;
+				WindowState = WindowState.Normal;
+				Topmost = !SafeExamBrowser.Settings.LockdownState.SwitchingUnlocked;
 			}
 			else if (WindowSettings.RelativeHeight == 100 && WindowSettings.RelativeWidth == 100)
 			{

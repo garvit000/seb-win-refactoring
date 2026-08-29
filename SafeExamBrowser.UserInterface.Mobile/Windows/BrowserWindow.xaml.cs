@@ -547,7 +547,8 @@ if (typeof __SEB_focusElement === 'undefined') {
 				Width = SystemParameters.PrimaryScreenWidth;
 				ResizeMode = ResizeMode.NoResize;
 				WindowStyle = WindowStyle.None;
-				WindowState = WindowState.Maximized;
+				WindowState = WindowState.Normal;
+				Topmost = !SafeExamBrowser.Settings.LockdownState.SwitchingUnlocked;
 			}
 			else if (WindowSettings.RelativeHeight == 100 && WindowSettings.RelativeWidth == 100)
 			{
