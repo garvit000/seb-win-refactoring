@@ -243,8 +243,10 @@ if ($effectiveConfigFile -ne $configSrc) {
 }
 Write-Host "  Logs    : " -NoNewline; Write-Host $logsFolder -ForegroundColor White
 Write-Host ""
-Write-Host "  Development mode: kiosk restrictions are relaxed. Not an exam environment." -ForegroundColor Yellow
-Write-Host "  Process and window switching (Alt-Tab, taskbar) remains available."
+Write-Host "  PROCTORED MODE: Full lockdown enforced." -ForegroundColor Red
+Write-Host "    Alt+Tab, Win key, trackpad gestures, and app switching are BLOCKED." -ForegroundColor Yellow
+Write-Host "    Press Shift+Alt+S to temporarily UNLOCK switching." -ForegroundColor Green
+Write-Host "    Press Shift+Alt+L to RELOCK switching." -ForegroundColor Green
 Write-Host "  Settings are session-only and are not written to persistent client config."
 Write-Host "  Quit with Ctrl-Q, Alt-F4, or the Quit button."
 Write-Host ""
@@ -253,7 +255,49 @@ Write-Host ""
 $env:SEB_DEV_RELAXED_LOCKDOWN = "1"
 [Environment]::SetEnvironmentVariable("SEB_DEV_RELAXED_LOCKDOWN", "1", [EnvironmentVariableTarget]::Process)
 
-Write-Info "Launching SafeExamBrowser (with relaxed development lockdown)..."
-Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`""
+# Disable Windows trackpad 3-finger and 4-finger gestures to prevent bypassing keyboard hooks.
+# These gestures generate Win+Tab, Ctrl+Win+Left/Right etc. at the driver level which can bypass
+# WH_KEYBOARD_LL hooks on some Windows 11 builds.
+$touchpadRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\PrecisionTouchPad"
+$savedThreeFinger = $null
+$savedFourFinger = $null
+try {
+    if (Test-Path $touchpadRegPath) {
+        $savedThreeFinger = (Get-ItemProperty $touchpadRegPath -Name "ThreeFingerSlideEnabled" -ErrorAction SilentlyContinue).ThreeFingerSlideEnabled
+        $savedFourFinger  = (Get-ItemProperty $touchpadRegPath -Name "FourFingerSlideEnabled"  -ErrorAction SilentlyContinue).FourFingerSlideEnabled
+        Set-ItemProperty $touchpadRegPath -Name "ThreeFingerSlideEnabled" -Value 0 -ErrorAction SilentlyContinue
+        Set-ItemProperty $touchpadRegPath -Name "FourFingerSlideEnabled"  -Value 0 -ErrorAction SilentlyContinue
+        Write-Info "Trackpad 3-finger and 4-finger gestures DISABLED for proctored mode."
+    }
+} catch {
+    Write-WarningMsg "Could not disable trackpad gestures: $_"
+}
 
-Write-Success "Launched. Attach Visual Studio / debugger via Debug -> Attach to Process -> SafeExamBrowser if needed."
+Write-Info "Launching SafeExamBrowser (proctored lockdown mode)..."
+$proc = Start-Process -FilePath $launchApp -ArgumentList "`"$effectiveConfigFile`"" -PassThru
+
+Write-Success "Launched (PID $($proc.Id)). Waiting for SEB to exit..."
+
+# Wait for the SEB process to exit, then restore trackpad gestures
+$proc.WaitForExit()
+
+try {
+    if (Test-Path $touchpadRegPath) {
+        if ($null -ne $savedThreeFinger) {
+            Set-ItemProperty $touchpadRegPath -Name "ThreeFingerSlideEnabled" -Value $savedThreeFinger -ErrorAction SilentlyContinue
+        } else {
+            Set-ItemProperty $touchpadRegPath -Name "ThreeFingerSlideEnabled" -Value 1 -ErrorAction SilentlyContinue
+        }
+        if ($null -ne $savedFourFinger) {
+            Set-ItemProperty $touchpadRegPath -Name "FourFingerSlideEnabled"  -Value $savedFourFinger  -ErrorAction SilentlyContinue
+        } else {
+            Set-ItemProperty $touchpadRegPath -Name "FourFingerSlideEnabled"  -Value 1 -ErrorAction SilentlyContinue
+        }
+        Write-Info "Trackpad gestures RESTORED."
+    }
+} catch {
+    Write-WarningMsg "Could not restore trackpad gestures: $_"
+}
+
+Write-Success "SEB session ended."
+

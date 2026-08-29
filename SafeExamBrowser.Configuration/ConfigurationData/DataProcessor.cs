@@ -130,10 +130,16 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 				settings.Browser.MainWindow.ShowHomeButton = false;
 				settings.Browser.MainWindow.AllowDeveloperConsole = true;
 				settings.Browser.AdditionalWindow.AllowDeveloperConsole = true;
-				settings.Keyboard.AllowAltTab = true;
+
+				// Proctored lockdown: block all window/task switching by default.
+				// The KeyboardInterceptor has Shift+Alt+S / Shift+Alt+L hotkeys to
+				// dynamically unlock/relock switching at runtime.
+				settings.Keyboard.AllowAltTab = false;
 				settings.Keyboard.AllowAltF4 = true;
-				settings.Keyboard.AllowCtrlEsc = true;
-				settings.Keyboard.AllowAltEsc = true;
+				settings.Keyboard.AllowCtrlEsc = false;
+				settings.Keyboard.AllowAltEsc = false;
+				settings.Keyboard.AllowSystemKey = false;
+
 				settings.Service.IgnoreService = true;
 			}
 		}
