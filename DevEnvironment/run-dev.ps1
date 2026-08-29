@@ -89,8 +89,39 @@ if (-not $Config -and -not $Url -and $ExtraArgs -and $ExtraArgs.Count -gt 0) {
     }
 }
 
+# Convert custom URL schemes to standard HTTP/HTTPS
+if ($Url) {
+    if ($Url.StartsWith("sebdevs://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $Url = "https://" + $Url.Substring(10)
+    } elseif ($Url.StartsWith("sebdev://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $Url = "http://" + $Url.Substring(9)
+    } elseif ($Url.StartsWith("sebs://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $Url = "https://" + $Url.Substring(7)
+    } elseif ($Url.StartsWith("seb://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $Url = "http://" + $Url.Substring(6)
+    }
+}
+
 $commonScript = Join-Path $PSScriptRoot "seb-dev-common.ps1"
 . $commonScript
+
+# If a remote .seb URL was passed, download it as the configuration
+if ($Url -and ($Url -match "\.seb(\?.*)?$" -or $Url -match "/exams/")) {
+    $sessionDir = Join-Path $DEV_BUILD_DIR "session"
+    if (-not (Test-Path $sessionDir)) {
+        New-Item -ItemType Directory -Path $sessionDir -Force | Out-Null
+    }
+    $downloadedSeb = Join-Path $sessionDir "remote-exam.seb"
+    Write-Info "Downloading exam configuration from: $Url"
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls13
+        Invoke-WebRequest -Uri $Url -OutFile $downloadedSeb -UseBasicParsing
+        $Config = $downloadedSeb
+        $Url = $null
+    } catch {
+        Write-WarningMsg "Could not download '$Url' directly via PowerShell ($($_.Exception.Message)). Passing URL to SEB engine."
+    }
+}
 
 $configSrc = if ($Config) { (Resolve-Path $Config).Path } else { $DEV_CONFIG }
 

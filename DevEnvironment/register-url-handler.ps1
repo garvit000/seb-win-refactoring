@@ -67,11 +67,15 @@ $RUN_DEV_SCRIPT = Join-Path $DEV_DIR "run-dev.ps1"
 
 # --- 1. Unregister -----------------------------------------------------------
 if ($Unregister) {
-    Write-Info "Unregistering 'sebdev' and 'sebdevs' protocol handlers from HKCU:\Software\Classes..."
+    Write-Info "Unregistering 'seb', 'sebs', 'sebdev', and 'sebdevs' protocol handlers and .seb association from HKCU:\Software\Classes..."
     
     $keys = @(
+        "HKCU:\Software\Classes\seb",
+        "HKCU:\Software\Classes\sebs",
         "HKCU:\Software\Classes\sebdev",
-        "HKCU:\Software\Classes\sebdevs"
+        "HKCU:\Software\Classes\sebdevs",
+        "HKCU:\Software\Classes\.seb",
+        "HKCU:\Software\Classes\SafeExamBrowser.File.Dev"
     )
     foreach ($k in $keys) {
         if (Test-Path $k) {
@@ -83,21 +87,18 @@ if ($Unregister) {
         Remove-Item -Path $HANDLER_SCRIPT -Force -ErrorAction SilentlyContinue
     }
 
-    Write-Success "Protocol handlers removed. sebdev:// and sebdevs:// links no longer resolve on this PC."
+    Write-Success "Protocol handlers and file associations removed."
     exit 0
 }
 
 # --- 2. Prompt confirmation --------------------------------------------------
 if (-not $Yes) {
     Write-Host ""
-    Write-Host "This will register custom URL protocol handlers for your user account:" -ForegroundColor Cyan
-    Write-Host "  Register: sebdev://  and  sebdevs://   (in HKCU:\Software\Classes)"
+    Write-Host "This will register custom URL protocol handlers and .seb file association for your user account:" -ForegroundColor Cyan
+    Write-Host "  Register: seb://, sebs://, sebdev://, sebdevs:// and .seb files (in HKCU:\Software\Classes)"
     Write-Host "  Target  : $HANDLER_SCRIPT"
     Write-Host ""
-    Write-Host "Not affected: " -NoNewline -ForegroundColor Green
-    Write-Host "seb:// and sebs:// keep opening the installed Safe Exam Browser."
     Write-Host "No administrator rights required. No system files touched."
-    Write-Host ""
     Write-Host "Undo at any time: .\register-url-handler.ps1 -Unregister" -ForegroundColor DarkGray
     Write-Host ""
 
@@ -123,7 +124,7 @@ if ($App) {
 
 $handlerContent = @"
 #
-# SEBDevHandler.ps1 -- generated URL protocol handler for sebdev:// and sebdevs://
+# SEBDevHandler.ps1 -- generated URL protocol handler for seb://, sebs://, sebdev://, sebdevs://
 #
 param([string]`$Url = "")
 
@@ -136,6 +137,10 @@ function Convert-Scheme([string]`$u) {
         return "https://" + `$u.Substring(10)
     } elseif (`$u.StartsWith("sebdev://", [System.StringComparison]::OrdinalIgnoreCase)) {
         return "http://" + `$u.Substring(9)
+    } elseif (`$u.StartsWith("sebs://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "https://" + `$u.Substring(7)
+    } elseif (`$u.StartsWith("seb://", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return "http://" + `$u.Substring(6)
     }
     return `$u
 }
@@ -163,7 +168,7 @@ if (-not (Test-Path $HANDLER_LOG)) {
 }
 
 # --- 4. Register in HKCU:\Software\Classes ------------------------------------
-$schemes = @("sebdev", "sebdevs")
+$schemes = @("seb", "sebs", "sebdev", "sebdevs")
 foreach ($scheme in $schemes) {
     $schemeKey = "HKCU:\Software\Classes\$scheme"
     $commandKey = "$schemeKey\shell\open\command"
@@ -182,10 +187,27 @@ foreach ($scheme in $schemes) {
     Set-ItemProperty -Path $commandKey -Name "(Default)" -Value $cmdVal -Force
 }
 
-Write-Success "Registered 'sebdev://' and 'sebdevs://' protocol handlers in HKCU:\Software\Classes."
+# Register .seb file association pointing to the handler
+$extKey = "HKCU:\Software\Classes\.seb"
+$progId = "SafeExamBrowser.File.Dev"
+$progIdKey = "HKCU:\Software\Classes\$progId"
+$fileCmdKey = "$progIdKey\shell\open\command"
+
+if (-not (Test-Path $extKey)) { New-Item -Path $extKey -Force | Out-Null }
+Set-ItemProperty -Path $extKey -Name "(Default)" -Value $progId -Force
+
+if (-not (Test-Path $progIdKey)) { New-Item -Path $progIdKey -Force | Out-Null }
+Set-ItemProperty -Path $progIdKey -Name "(Default)" -Value "Safe Exam Browser Development Configuration" -Force
+
+if (-not (Test-Path $fileCmdKey)) { New-Item -Path $fileCmdKey -Force | Out-Null }
+$fileOpenCmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$HANDLER_SCRIPT`" `"%1`""
+Set-ItemProperty -Path $fileCmdKey -Name "(Default)" -Value $fileOpenCmd -Force
+
+Write-Success "Registered 'seb://', 'sebs://', 'sebdev://', 'sebdevs://' and .seb file handlers in HKCU:\Software\Classes."
 Write-Host ""
-Write-Host "  Test it:   Start-Process `"$DEV_DIR\seb-test-page.html`" and click the button" -ForegroundColor White
-Write-Host "  Verify:    .\check-last-run.ps1" -ForegroundColor White
-Write-Host "  Log:       $HANDLER_LOG" -ForegroundColor White
-Write-Host "  Remove:    .\register-url-handler.ps1 -Unregister" -ForegroundColor White
+Write-Host "  Web Links: Clicking any seb:// or sebs:// link in your browser will open the dev environment!" -ForegroundColor White
+Write-Host "  Files    : Double-clicking any .seb file in Windows Explorer will open the dev environment!" -ForegroundColor White
+Write-Host "  Log      : $HANDLER_LOG" -ForegroundColor White
+Write-Host "  Remove   : .\register-url-handler.ps1 -Unregister" -ForegroundColor DarkGray
+Write-Host ""
 Write-Host ""
